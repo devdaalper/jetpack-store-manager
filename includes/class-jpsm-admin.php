@@ -468,11 +468,7 @@ class JPSM_Admin
         ?>
         <div id="jpsm-mobile-app">
 
-            <!-- Header -->
-            <div class="jpsm-header">
-                <h1>🚀 JetPack Store</h1>
-                <p>Panel de Gestión</p>
-            </div>
+            <!-- Old Header Removed - Now inside Main Content -->
 
             <?php
             // Calculate Stats
@@ -570,49 +566,72 @@ class JPSM_Admin
             $top_customers = array_slice($customer_stats, 0, 5, true);
             ?>
 
-            <!-- Top Revenue Summary (Sticky) -->
-            <div class="jpsm-revenue-summary jpsm-stats-grid-top">
-                <div class="jpsm-rev-card jpsm-rev-today">
-                    <div class="jpsm-rev-top">
-                        <span class="jpsm-rev-label">Ventas Hoy</span>
-                        <span class="jpsm-rev-count"><?php echo $sales_today; ?></span>
+            <!-- Dashboard Container (Grid Layout) -->
+            <div class="jpsm-dashboard-container">
+                
+                <!-- Desktop Sidebar -->
+                <aside class="jpsm-sidebar">
+                    <div class="jpsm-brand">
+                        <h2>🚀 JetPack</h2>
+                        <span class="jpsm-badge">PRO</span>
                     </div>
-                    <div class="jpsm-rev-split">
-                        <div class="jpsm-currency-line">
-                            <span class="jpsm-flag">🇲🇽</span>
-                            <span class="jpsm-val">$<?php echo number_format($rev_today_mxn, 2); ?></span>
-                        </div>
-                        <div class="jpsm-currency-line">
-                            <span class="jpsm-flag">🌍</span>
-                            <span class="jpsm-val">$<?php echo number_format($rev_today_usd, 2); ?></span>
-                        </div>
-                    </div>
-                </div>
+                    
+                    <nav class="jpsm-nav-menu">
+                        <a href="#" class="jpsm-nav-item active" onclick="jpsmOpenTab(event, 'jpsm-tab-new')">
+                            <span class="icon">🛒</span> Nueva Venta
+                        </a>
+                        <a href="#" class="jpsm-nav-item" onclick="jpsmOpenTab(event, 'jpsm-tab-stats')">
+                            <span class="icon">📊</span> Métricas
+                        </a>
+                        <a href="#" class="jpsm-nav-item" onclick="jpsmOpenTab(event, 'jpsm-tab-history')">
+                            <span class="icon">📜</span> Historial
+                        </a>
+                        <div class="jpsm-nav-divider"></div>
+                        <a href="#" class="jpsm-nav-item" onclick="location.reload()">
+                            <span class="icon">🔄</span> Recargar
+                        </a>
+                    </nav>
+                </aside>
 
-                <div class="jpsm-rev-carousel">
-                    <div class="jpsm-rev-mini">
-                        <span class="jpsm-mini-label">Mes Actual</span>
-                        <div class="jpsm-mini-vals">
-                            <span>🇲🇽 $<?php echo number_format($rev_month_mxn, 0); ?></span>
-                            <span>🌍 $<?php echo number_format($rev_month_usd, 0); ?></span>
-                        </div>
+                <!-- Main Content Area -->
+                <main class="jpsm-main-content">
+                    
+                    <!-- Header moved inside Main Content -->
+                    <div class="jpsm-header">
+                        <h1>Panel de Gestión, <?php echo wp_get_current_user()->display_name; ?></h1>
+                        <p class="jpsm-date-display"><?php echo date_i18n('l, d F Y'); ?></p>
                     </div>
-                    <div class="jpsm-rev-mini">
-                        <span class="jpsm-mini-label">Histórico</span>
-                        <div class="jpsm-mini-vals">
-                            <span>🇲🇽 $<?php echo number_format($rev_total_mxn, 0); ?></span>
-                            <span>🌍 $<?php echo number_format($rev_total_usd, 0); ?></span>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Mobile Navigation -->
-            <div class="jpsm-nav-tabs">
-                <button class="jpsm-tab-link active" onclick="jpsmOpenTab(event, 'jpsm-tab-new')">Nueva Venta</button>
-                <button class="jpsm-tab-link" onclick="jpsmOpenTab(event, 'jpsm-tab-history')">Historial</button>
-                <button class="jpsm-tab-link" onclick="jpsmOpenTab(event, 'jpsm-tab-stats')">Métricas</button>
-            </div>
+                    <!-- Top Revenue Cards (KPIs) -->
+                    <div class="jpsm-revenue-summary jpsm-kpi-grid">
+                        <div class="jpsm-kpi-card">
+                            <span class="jpsm-kpi-label">Ventas Hoy</span>
+                            <div class="jpsm-kpi-value"><?php echo $sales_today; ?></div>
+                            <span class="jpsm-kpi-trend positive">+100%</span> <!-- Placeholder logic -->
+                        </div>
+                        
+                        <div class="jpsm-kpi-card">
+                            <span class="jpsm-kpi-label">Ingresos MXN (Hoy)</span>
+                            <div class="jpsm-kpi-value positive">$<?php echo number_format($rev_today_mxn, 2); ?></div>
+                        </div>
+
+                        <div class="jpsm-kpi-card">
+                            <span class="jpsm-kpi-label">Ingresos USD (Hoy)</span>
+                            <div class="jpsm-kpi-value accent">$<?php echo number_format($rev_today_usd, 2); ?></div>
+                        </div>
+
+                        <div class="jpsm-kpi-card">
+                            <span class="jpsm-kpi-label">Total Mes (MXN)</span>
+                            <div class="jpsm-kpi-value">$<?php echo number_format($rev_month_mxn, 0); ?></div>
+                        </div>
+                    </div>
+
+                    <!-- Mobile Tabs (Hidden on Desktop via CSS) -->
+                    <div class="jpsm-nav-tabs">
+                        <button class="jpsm-tab-link active" onclick="jpsmOpenTab(event, 'jpsm-tab-new')">Nueva Venta</button>
+                        <button class="jpsm-tab-link" onclick="jpsmOpenTab(event, 'jpsm-tab-history')">Historial</button>
+                        <button class="jpsm-tab-link" onclick="jpsmOpenTab(event, 'jpsm-tab-stats')">Métricas</button>
+                    </div>
 
             <!-- TAB 1: NEW SALE -->
             <div id="jpsm-tab-new" class="jpsm-tab-content" style="display:block;">
@@ -676,7 +695,8 @@ class JPSM_Admin
                 <div class="jpsm-mobile-card" style="margin-top:20px;">
                     <h3>📋 Actividad Reciente</h3>
                     <div class="jpsm-history-list">
-                        <table class="jpsm-mobile-table">
+                    <div class="jpsm-history-list">
+                        <table class="jpsm-modern-table">
                             <thead>
                                 <tr>
                                     <th style='width:40px;'></th>
@@ -686,6 +706,7 @@ class JPSM_Admin
                             </thead>
                             <tbody class="jpsm-activity-body-target"></tbody>
                         </table>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -703,7 +724,7 @@ class JPSM_Admin
                             Vaciado Total</button>
                     </div>
                     <div class="jpsm-history-list">
-                        <table class="jpsm-mobile-table">
+                        <table class="jpsm-modern-table">
                             <thead>
                                 <tr>
                                     <th style='width:40px;'><input type='checkbox' id='jpsm-check-all'></th>
@@ -740,23 +761,36 @@ class JPSM_Admin
                 </div>
 
                 <div class="jpsm-mobile-card" style="margin-top: -10px;">
-                    <h3 style="color:#f0883e;">🏆 Top 5 Clientes</h3>
+                    <h3 style="color:var(--jpsm-accent-cyan);">🏆 Top 5 Clientes</h3>
                     <div class="jpsm-top-clients">
-                        <?php foreach ($top_customers as $mail => $c): ?>
-                            <div class="jpsm-top-client-item">
-                                <span class="jpsm-client-email"><?php echo esc_html($mail); ?></span>
-                                <div class="jpsm-client-meta">
-                                    <span class="jpsm-client-count">Compras: <?php echo $c['count']; ?></span>
-                                    <span class="jpsm-client-total">
-                                        <?php
-                                        $parts = array();
-                                        if ($c['mxn'] > 0)
-                                            $parts[] = "$" . number_format($c['mxn'], 0);
-                                        if ($c['usd'] > 0)
-                                            $parts[] = "$" . number_format($c['usd'], 0) . " USD";
-                                        echo implode(' + ', $parts);
-                                        ?>
-                                    </span>
+                        <?php 
+                        // Get max value for progress bars
+                        $max_total = 0;
+                        if (!empty($top_customers)) {
+                            $first = reset($top_customers);
+                            $max_total = $first['total'];
+                        }
+
+                        foreach ($top_customers as $mail => $c): 
+                            $percent = ($max_total > 0) ? ($c['total'] / $max_total) * 100 : 0;
+                        ?>
+                            <div class="jpsm-top-client-item" style="--progress-width: <?php echo $percent; ?>%;">
+                                <div style="display:flex; flex-direction:column; width:100%; position:relative; z-index:2;">
+                                    <div class="jpsm-client-meta">
+                                        <span class="jpsm-client-email"><?php echo esc_html($mail); ?></span>
+                                        <span class="jpsm-client-total">
+                                            <?php
+                                            $parts = array();
+                                            if ($c['mxn'] > 0) $parts[] = "$" . number_format($c['mxn'], 0);
+                                            if ($c['usd'] > 0) $parts[] = "$" . number_format($c['usd'], 0) . " USD";
+                                            echo implode(' + ', $parts);
+                                            ?>
+                                        </span>
+                                    </div>
+                                    <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                                        <span class="jpsm-client-count"><?php echo $c['count']; ?> Compras</span>
+                                        <span class="jpsm-client-count"><?php echo number_format($percent, 0); ?>% Vol.</span>
+                                    </div>
                                 </div>
                             </div>
                         <?php endforeach; ?>

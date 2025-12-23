@@ -43,43 +43,73 @@ body.jetpack-store_page_jpsm-settings {
 
 :root {
     /* --- Deep Space Palette --- */
-    --jpsm-bg-void: #010409;
-    --jpsm-bg-deep: #0d1117;
-    --jpsm-bg-elevated: #161b22;
-    --jpsm-bg-card: rgba(22, 27, 34, 0.85);
-    --jpsm-bg-glass: rgba(30, 35, 45, 0.6);
+    /* --- Power BI "Contoso" Palette --- */
+    --jpsm-bg-void: #101020;
+    /* Deepest Navy */
+    --jpsm-bg-deep: #1a1a2e;
+    /* Sidebar/Panel BG */
+    --jpsm-bg-card: rgba(30, 30, 50, 0.7);
+    /* Glass Card */
+    --jpsm-bg-glass: rgba(26, 26, 46, 0.85);
+    /* Nav Bar Glass */
+    --jpsm-bg-hover: rgba(255, 255, 255, 0.05);
 
     /* Borders & Dividers */
-    --jpsm-border-default: #30363d;
-    --jpsm-border-muted: #21262d;
-    --jpsm-border-glow: rgba(126, 231, 135, 0.3);
+    --jpsm-border-default: #2a2a40;
+    --jpsm-border-muted: #202030;
+    --jpsm-border-highlight: rgba(86, 211, 100, 0.5);
 
-    /* Text - Increased for readability */
-    --jpsm-text-primary: #f0f6fc;
-    --jpsm-text-secondary: #8b949e;
-    --jpsm-text-tertiary: #6e7681;
+    /* Text */
+    --jpsm-text-primary: #ffffff;
+    --jpsm-text-secondary: #a0a0b0;
+    --jpsm-text-tertiary: #6b6b80;
 
-    /* Accent Colors */
-    --jpsm-green: #3fb950;
-    --jpsm-green-light: #7ee787;
-    --jpsm-blue: #58a6ff;
-    --jpsm-purple: #a371f7;
-    --jpsm-pink: #db61a2;
-    --jpsm-danger: #f85149;
+    /* Power BI Accents */
+    --jpsm-accent-cyan: #00e0ff;
+    /* Electric Blue */
+    --jpsm-accent-purple: #bd00ff;
+    /* Neon Purple */
+    --jpsm-accent-blue: #2563eb;
+    --jpsm-accent-green: #00ff9d;
+    --jpsm-accent-pink: #ff007f;
+    --jpsm-status-success: #4ade80;
+    --jpsm-status-error: #f43f5e;
 
     /* Gradients */
-    --jpsm-gradient-brand: linear-gradient(135deg, #7ee787 0%, #56d364 100%);
-    --jpsm-gradient-cosmic:
-        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.3), transparent),
-        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(56, 189, 248, 0.15), transparent),
-        radial-gradient(ellipse 50% 30% at 0% 0%, rgba(168, 85, 247, 0.15), transparent);
+    --jpsm-gradient-brand: linear-gradient(135deg, #00e0ff 0%, #2563eb 100%);
+    --jpsm-gradient-card: linear-gradient(160deg, rgba(40, 40, 60, 0.6) 0%, rgba(20, 20, 30, 0.8) 100%);
+    --jpsm-gradient-glow: radial-gradient(circle at top right, rgba(0, 224, 255, 0.1), transparent 60%);
 
-    /* Shadows - Enhanced for depth */
-    --jpsm-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-    --jpsm-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
-    --jpsm-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
-    --jpsm-shadow-glow-green: 0 0 40px rgba(63, 185, 80, 0.4);
-    --jpsm-shadow-glow-blue: 0 0 25px rgba(88, 166, 255, 0.25);
+    /* Shadows */
+    --jpsm-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
+    --jpsm-shadow-glow: 0 0 15px rgba(0, 224, 255, 0.15);
+
+    /* Spacing & Sizes */
+    --sidebar-width: 260px;
+    --jpsm-space-xs: 8px;
+    --jpsm-space-sm: 12px;
+    --jpsm-space-md: 16px;
+    --jpsm-space-lg: 24px;
+    --jpsm-space-xl: 32px;
+
+    /* Radius */
+    --jpsm-radius-sm: 8px;
+    --jpsm-radius-md: 12px;
+    --jpsm-radius-lg: 20px;
+    --jpsm-radius-full: 999px;
+
+    /* Typography */
+    --jpsm-font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --jpsm-font-size-sm: 13px;
+    --jpsm-font-size-md: 15px;
+    --jpsm-font-size-lg: 20px;
+    --jpsm-font-size-xl: 28px;
+    --jpsm-font-size-xxl: 42px;
+
+    /* Touch & Safe Area */
+    --jpsm-touch-min: 44px;
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 
     /* Mobile-First Spacing - Generous for touch */
     --jpsm-space-xs: 8px;
@@ -110,34 +140,206 @@ body.jetpack-store_page_jpsm-settings {
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-/* --- Base Container --- */
-#jpsm-mobile-app {
-    font-family: var(--jpsm-font);
-    background-color: var(--jpsm-bg-void);
-    background-image: var(--jpsm-gradient-cosmic);
-    background-attachment: fixed;
-    color: var(--jpsm-text-primary);
+/* --- Dashboard Layout (Grid System) --- */
+.jpsm-dashboard-container {
+    display: flex;
+    /* Mobile default: Stack vertical */
+    flex-direction: column;
     min-height: 100vh;
-    min-height: 100dvh;
-    /* Dynamic viewport for mobile */
-    padding: var(--jpsm-space-lg);
-    padding-top: calc(var(--jpsm-space-lg) + var(--safe-area-top));
-    padding-bottom: calc(100px + var(--safe-area-bottom));
-    /* Space for bottom nav */
-    box-sizing: border-box;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-    margin: 0 auto;
-    max-width: 100%;
+    gap: var(--jpsm-space-md);
 }
 
+/* --- Mobile Nav (Bottom Bar) --- */
+.jpsm-nav-tabs {
+    display: flex;
+    /* Flex by default on mobile */
+    /* Existing content handles mobile look */
+}
+
+/* --- Sidebar (Default Hidden on Mobile) --- */
+.jpsm-sidebar {
+    display: none;
+}
+
+/* --- KPI Grid (Scorecards) --- */
+.jpsm-kpi-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    /* 1 col mobile */
+    gap: var(--jpsm-space-md);
+    margin-bottom: var(--jpsm-space-lg);
+}
+
+.jpsm-kpi-card {
+    background: var(--jpsm-bg-card);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--jpsm-border-default);
+    border-radius: var(--jpsm-radius-md);
+    padding: var(--jpsm-space-md);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.jpsm-kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    /* Default sidebar accent */
+    height: 100%;
+    background: var(--jpsm-text-tertiary);
+    opacity: 0.5;
+}
+
+.jpsm-kpi-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--jpsm-shadow-card);
+    border-color: var(--jpsm-text-secondary);
+}
+
+.jpsm-kpi-label {
+    font-size: var(--jpsm-font-size-sm);
+    color: var(--jpsm-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--jpsm-space-xs);
+}
+
+.jpsm-kpi-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--jpsm-text-primary);
+}
+
+.jpsm-kpi-value.accent {
+    color: var(--jpsm-accent-cyan);
+}
+
+.jpsm-kpi-value.positive {
+    color: var(--jpsm-status-success);
+}
+
+.jpsm-kpi-trend {
+    position: absolute;
+    top: var(--jpsm-space-md);
+    right: var(--jpsm-space-md);
+    font-size: var(--jpsm-font-size-sm);
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(74, 222, 128, 0.1);
+    color: var(--jpsm-status-success);
+}
+
+/* --- Desktop Layout (> 1024px) --- */
 @media (min-width: 1024px) {
-    #jpsm-mobile-app {
-        max-width: 1200px;
-        border-left: 1px solid var(--jpsm-border-default);
+    .jpsm-dashboard-container {
+        flex-direction: row;
+        /* Side-by-side */
+        gap: 0;
+        /* Sidebar manages spacing */
+        max-width: 100%;
+        /* Full width within wrapper */
+    }
+
+    /* Hide Mobile Nav */
+    .jpsm-nav-tabs,
+    .jpsm-header p.jpsm-date-display
+
+    /* Adjust legacy header bits */
+        {
+        display: none !important;
+    }
+
+    /* Show Sidebar */
+    .jpsm-sidebar {
+        display: flex;
+        flex-direction: column;
+        width: 260px;
+        min-width: 260px;
+        background: var(--jpsm-bg-deep);
         border-right: 1px solid var(--jpsm-border-default);
-        box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
+        padding: var(--jpsm-space-lg);
+        height: 100vh;
+        position: sticky;
+        top: 0;
+    }
+
+    .jpsm-brand {
+        margin-bottom: var(--jpsm-space-xl);
+        display: flex;
+        align-items: center;
+        gap: var(--jpsm-space-xs);
+    }
+
+    .jpsm-brand h2 {
+        font-size: 1.5rem;
+        margin: 0;
+        background: var(--jpsm-gradient-brand);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .jpsm-badge {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 10px;
+        letter-spacing: 1px;
+    }
+
+    .jpsm-nav-menu {
+        display: flex;
+        flex-direction: column;
+        gap: var(--jpsm-space-xs);
+    }
+
+    .jpsm-nav-item {
+        display: flex;
+        align-items: center;
+        gap: var(--jpsm-space-md);
+        padding: 12px 16px;
+        border-radius: var(--jpsm-radius-sm);
+        color: var(--jpsm-text-secondary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.2s ease;
+    }
+
+    .jpsm-nav-item:hover {
+        background: var(--jpsm-bg-hover);
+        color: var(--jpsm-text-primary);
+    }
+
+    .jpsm-nav-item.active {
+        background: rgba(0, 224, 255, 0.1);
+        /* Cyan tint */
+        color: var(--jpsm-accent-cyan);
+        border-left: 3px solid var(--jpsm-accent-cyan);
+    }
+
+    .jpsm-nav-divider {
+        height: 1px;
+        background: var(--jpsm-border-muted);
+        margin: var(--jpsm-space-md) 0;
+    }
+
+    /* Main Content */
+    .jpsm-main-content {
+        flex: 1;
         padding: var(--jpsm-space-xl);
+        overflow-y: auto;
+    }
+
+    /* KPI Grid Expand */
+    .jpsm-kpi-grid {
+        grid-template-columns: repeat(4, 1fr);
+        /* 4 cols desktop */
+        gap: var(--jpsm-space-lg);
     }
 }
 
@@ -924,47 +1126,142 @@ input[type="checkbox"].jpsm-log-check:checked,
     padding-left: 0;
 }
 
-/* --- Business Intelligence Components --- */
+/* --- Business Intelligence Components (Power BI Style) --- */
+
+/* Top Clients List */
 .jpsm-top-clients {
-    margin-top: -8px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--jpsm-space-sm);
+    margin-top: 0;
 }
 
 .jpsm-top-client-item {
     display: flex;
-    flex-direction: column;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--jpsm-border-muted);
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--jpsm-radius-sm);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease;
 }
 
-.jpsm-top-client-item:last-child {
-    border-bottom: none;
+.jpsm-top-client-item:hover {
+    transform: translateX(4px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Progress Bar Background Effect */
+.jpsm-top-client-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: var(--progress-width, 0%);
+    /* Set via inline style in PHP if possible, else JS */
+    background: linear-gradient(90deg, rgba(0, 224, 255, 0.05), rgba(37, 99, 235, 0.08));
+    z-index: 0;
+    pointer-events: none;
 }
 
 .jpsm-client-email {
     font-size: 13px;
-    font-weight: 700;
+    font-weight: 500;
     color: var(--jpsm-text-primary);
+    z-index: 1;
+    white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    max-width: 55%;
 }
 
 .jpsm-client-meta {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 4px;
-}
-
-.jpsm-client-count {
-    font-size: 11px;
-    color: var(--jpsm-text-tertiary);
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 1;
 }
 
 .jpsm-client-total {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--jpsm-accent-cyan);
+    letter-spacing: 0.5px;
+}
+
+.jpsm-client-count {
+    font-size: 10px;
+    color: var(--jpsm-text-tertiary);
+    text-transform: uppercase;
+}
+
+/* --- Modern Data Tables --- */
+.jpsm-modern-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 4px;
+    /* Row spacing */
+    margin-top: var(--jpsm-space-sm);
+}
+
+.jpsm-modern-table thead th {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: var(--jpsm-text-tertiary);
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 0 12px 8px;
+    text-align: left;
+}
+
+.jpsm-modern-table tbody tr {
+    background: rgba(255, 255, 255, 0.02);
+    transition: background 0.2s;
+}
+
+.jpsm-modern-table tbody tr:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.jpsm-modern-table td {
+    padding: 12px;
     font-size: 13px;
-    font-weight: 800;
-    color: var(--jpsm-green-light);
+    color: var(--jpsm-text-secondary);
+    border: none;
+}
+
+.jpsm-modern-table td:first-child {
+    border-top-left-radius: 6px;
+    border-bottom-left-radius: 6px;
+}
+
+.jpsm-modern-table td:last-child {
+    border-top-right-radius: 6px;
+    border-bottom-right-radius: 6px;
+}
+
+/* --- Scrollbars (Webkit) --- */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
 }
 
 /* --- Multi-Column Layout for Desktop --- */
@@ -978,18 +1275,5 @@ input[type="checkbox"].jpsm-log-check:checked,
     .jpsm-charts-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
-    }
-
-    .jpsm-revenue-summary {
-        grid-template-columns: 1.5fr 1fr;
-        display: grid;
-    }
-}
-
-@media (min-width: 1024px) {
-    .jpsm-stats-grid-top {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
-        gap: var(--jpsm-space-lg);
     }
 }
