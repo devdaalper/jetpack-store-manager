@@ -5,6 +5,42 @@
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
+/* --- WP Admin Overrides (Fix White Lines - Aggressive) --- */
+html.wp-toolbar,
+body.toplevel_page_jetpack-store-manager,
+body.jetpack-store_page_jpsm-settings {
+    background-color: #010409 !important;
+    height: 100%;
+}
+
+/* Force dark background on all WP wrappers */
+#wpwrap,
+#wpcontent,
+#wpbody,
+#wpbody-content,
+.auto-fold #wpcontent {
+    background-color: #010409 !important;
+}
+
+/* Hide WP Footer */
+#wpfooter {
+    display: none !important;
+}
+
+/* Reset margins for the plugin wrapper */
+.wrap {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+/* Fix specific areas that might leak white color */
+#adminmenuback,
+#adminmenuwrap {
+    background-color: #0d1117 !important;
+    /* Match sidebar to theme if needed, or keep WP default */
+}
+
 :root {
     /* --- Deep Space Palette --- */
     --jpsm-bg-void: #010409;
@@ -91,8 +127,20 @@
     box-sizing: border-box;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow-x: hidden;
+    margin: 0 auto;
+    max-width: 100%;
 }
+
+@media (min-width: 1024px) {
+    #jpsm-mobile-app {
+        max-width: 1200px;
+        border-left: 1px solid var(--jpsm-border-default);
+        border-right: 1px solid var(--jpsm-border-default);
+        box-shadow: 0 0 60px rgba(0, 0, 0, 0.5);
+        padding: var(--jpsm-space-xl);
+    }
+}
+
 
 #jpsm-mobile-app *,
 #jpsm-mobile-app *::before,
@@ -143,6 +191,18 @@
     box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
     z-index: 1000;
 }
+
+@media (min-width: 1024px) {
+    .jpsm-nav-tabs {
+        max-width: 600px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-radius: var(--jpsm-radius-lg) var(--jpsm-radius-lg) 0 0;
+        bottom: 20px;
+        border: 1px solid var(--jpsm-border-muted);
+    }
+}
+
 
 .jpsm-tab-link {
     flex: 1;
@@ -440,15 +500,105 @@ select.jpsm-input-lg {
 }
 
 .jpsm-info-subtext {
-    font-size: 11px;
+    font-size: 12px;
     color: var(--jpsm-text-tertiary);
     font-weight: 500;
+}
+
+/* Revenue Summary Section */
+.jpsm-revenue-summary {
+    display: flex;
+    gap: 12px;
+    margin: 0 16px 24px;
+    align-items: stretch;
+}
+
+.jpsm-rev-today {
+    flex: 1.2;
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 16px;
+    padding: 16px;
+    color: white;
+    box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.3);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.jpsm-rev-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.jpsm-rev-label {
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    opacity: 0.9;
+    letter-spacing: 0.5px;
+}
+
+.jpsm-rev-count {
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.jpsm-rev-split {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.jpsm-currency-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.jpsm-rev-carousel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.jpsm-rev-mini {
+    background: var(--jpsm-bg-card);
+    border: 1px solid var(--jpsm-border);
+    border-radius: 12px;
+    padding: 8px 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.jpsm-mini-label {
+    font-size: 10px;
+    color: var(--jpsm-text-tertiary);
+    text-transform: uppercase;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.jpsm-mini-vals {
+    display: flex;
+    flex-direction: column;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--jpsm-text-primary);
+    line-height: 1.3;
 }
 
 .jpsm-col-actions {
     text-align: right;
     white-space: nowrap;
-    width: 80px;
+    width: 90px;
 }
 
 .jpsm-col-actions button {
@@ -772,4 +922,74 @@ input[type="checkbox"].jpsm-log-check:checked,
     width: 40px;
     text-align: center;
     padding-left: 0;
+}
+
+/* --- Business Intelligence Components --- */
+.jpsm-top-clients {
+    margin-top: -8px;
+}
+
+.jpsm-top-client-item {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--jpsm-border-muted);
+}
+
+.jpsm-top-client-item:last-child {
+    border-bottom: none;
+}
+
+.jpsm-client-email {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--jpsm-text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.jpsm-client-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 4px;
+}
+
+.jpsm-client-count {
+    font-size: 11px;
+    color: var(--jpsm-text-tertiary);
+}
+
+.jpsm-client-total {
+    font-size: 13px;
+    font-weight: 800;
+    color: var(--jpsm-green-light);
+}
+
+/* --- Multi-Column Layout for Desktop --- */
+.jpsm-charts-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--jpsm-space-lg);
+}
+
+@media (min-width: 768px) {
+    .jpsm-charts-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .jpsm-revenue-summary {
+        grid-template-columns: 1.5fr 1fr;
+        display: grid;
+    }
+}
+
+@media (min-width: 1024px) {
+    .jpsm-stats-grid-top {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: var(--jpsm-space-lg);
+    }
 }

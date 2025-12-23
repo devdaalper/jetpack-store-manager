@@ -39,6 +39,8 @@ class JPSM_Admin
         add_action('wp_ajax_jpsm_resend_email', array($this, 'resend_email_ajax'));
         add_action('wp_ajax_nopriv_jpsm_resend_email', array($this, 'resend_email_ajax')); // Enable for Secret Key
 
+        add_action('wp_ajax_jpsm_freeze_prices', array($this, 'freeze_prices_ajax'));
+
         // Shortcode
         add_shortcode('jetpack_manager', array($this, 'render_frontend_interface'));
     }
@@ -153,7 +155,8 @@ class JPSM_Admin
                 ajax_url: '" . esc_url($ajax_url) . "',
                 nonce: '" . esc_js($ajax_nonce) . "',
                 key: '" . esc_js($current_key) . "',
-                history: " . json_encode($sales_log) . "
+                today: '" . current_time('Y-m-d') . "',
+                history: " . json_encode(array_reverse($sales_log)) . "
             };
 
             // VIP Dropdown Logic
@@ -200,12 +203,24 @@ class JPSM_Admin
 
             // Render History
             function renderHistory() {
-                var tbodies = document.querySelectorAll('.jpsm-activity-body-target');
-                if(tbodies.length === 0) return;
+                var containers = document.querySelectorAll('.jpsm-history-list');
+                if(containers.length === 0) return;
                 
-                tbodies.forEach(function(tbody) {
+                containers.forEach(function(container) {
+                    var tbody = container.querySelector('.jpsm-activity-body-target');
+                    if(!tbody) return;
+                    
+                    var isRecentOnly = container.closest('#jpsm-tab-new') !== null;
                     tbody.innerHTML = '';
-                    jpsm_vars.history.forEach(function(item) {
+                    
+                    var data = jpsm_vars.history;
+                    if(isRecentOnly) {
+                        data = data.filter(function(item) {
+                            return item.time.indexOf(jpsm_vars.today) !== -1;
+                        });
+                    }
+
+                    data.forEach(function(item) {
                         var tr = document.createElement('tr');
                         tr.innerHTML = `
                             <td class='jpsm-col-check'>
@@ -341,10 +356,13 @@ class JPSM_Admin
                     .then(response => response.json())
                     .then(data => {
                         if(data.success) {
-                            // Remove ALL rows with this ID to sync both tables
-                            document.querySelectorAll('.jpsm-delete-log[data-id=\"'+id+'\"]').forEach(function(b) {
-                                b.closest('tr').remove();
-                            });
+                            // Update global state and re-render all views
+                            if(window.jpsm_vars && jpsm_vars.history) {
+                                jpsm_vars.history = jpsm_vars.history.filter(function(i) {
+                                    return i.id != id;
+                                });
+                                renderHistory();
+                            }
                         }
                     });
                 }
@@ -456,6 +474,139 @@ class JPSM_Admin
                 <p>Panel de Gestión</p>
             </div>
 
+            <?php
+            // Calculate Stats
+            $log = get_option('jpsm_sales_log', array());
+            $total_sales = count($log);
+            $sales_today = 0;
+            $today_date = current_time('Y-m-d');
+            $this_month = current_time('Y-m');
+
+            $rev_today_mxn = 0;
+            $rev_today_usd = 0;
+            $rev_month_mxn = 0;
+            $rev_month_usd = 0;
+            $rev_total_mxn = 0;
+            $rev_total_usd = 0;
+
+            $packages = array('basic' => 0, 'vip' => 0, 'full' => 0);
+            $regions = array('national' => 0, 'international' => 0);
+            $hourly_sales = array_fill(0, 24, 0);
+            $customer_stats = array();
+
+            foreach ($log as $entry) {
+                // Determine Amount with Fallback
+                $amt = isset($entry['amount']) && $entry['amount'] > 0 ? floatval($entry['amount']) : $this->get_entry_price($entry);
+                $cur = isset($entry['currency']) ? $entry['currency'] : (($entry['region'] === 'international') ? 'USD' : 'MXN');
+                $time = $entry['time'];
+
+                if (strpos($time, $today_date) === 0) {
+                    $sales_today++;
+                    if ($cur === 'MXN')
+                        $rev_today_mxn += $amt;
+                    else
+                        $rev_today_usd += $amt;
+                }
+                if (strpos($time, $this_month) === 0) {
+                    if ($cur === 'MXN')
+                        $rev_month_mxn += $amt;
+                    else
+                        $rev_month_usd += $amt;
+                }
+                if ($cur === 'MXN')
+                    $rev_total_mxn += $amt;
+                else
+                    $rev_total_usd += $amt;
+
+                // Package Counts (Clean emojis and spaces)
+                $pkg_raw = isset($entry['package']) ? mb_strtolower($entry['package']) : '';
+                if (strpos($pkg_raw, 'básico') !== false)
+                    $packages['basic']++;
+                elseif (strpos($pkg_raw, 'vip') !== false)
+                    $packages['vip']++;
+                elseif (strpos($pkg_raw, 'full') !== false)
+                    $packages['full']++;
+
+                // Region Counts
+                $reg = isset($entry['region']) ? strtolower($entry['region']) : '';
+                if (isset($regions[$reg]))
+                    $regions[$reg]++;
+
+                // Time Distribution
+                $hour = intval(date('H', strtotime($time)));
+                $hourly_sales[$hour]++;
+
+                // Customer Stats
+                $email = isset($entry['email']) ? $entry['email'] : 'desconocido';
+                if (!isset($customer_stats[$email])) {
+                    $customer_stats[$email] = array('count' => 0, 'total' => 0, 'mxn' => 0, 'usd' => 0);
+                }
+                $customer_stats[$email]['count']++;
+                if ($cur === 'MXN') {
+                    $customer_stats[$email]['mxn'] += $amt;
+                } else {
+                    $customer_stats[$email]['usd'] += $amt;
+                }
+                // Weighted total for sorting (approx 1 USD = 17 MXN as a baseline for ranking)
+                $customer_stats[$email]['total'] += ($cur === 'MXN') ? $amt : ($amt * 17);
+            }
+
+            // Post-process KPIs
+            $avg_ticket_mxn = ($regions['national'] > 0) ? $rev_total_mxn / $regions['national'] : 0;
+            $avg_ticket_usd = ($regions['international'] > 0) ? $rev_total_usd / $regions['international'] : 0;
+
+            $unique_clients = count($customer_stats);
+            $recurring_clients = 0;
+            foreach ($customer_stats as $c) {
+                if ($c['count'] > 1)
+                    $recurring_clients++;
+            }
+            $new_clients = max(0, $unique_clients - $recurring_clients);
+
+            // Sort Top Customers
+            uasort($customer_stats, function ($a, $b) {
+                return $b['total'] <=> $a['total'];
+            });
+            $top_customers = array_slice($customer_stats, 0, 5, true);
+            ?>
+
+            <!-- Top Revenue Summary (Sticky) -->
+            <div class="jpsm-revenue-summary jpsm-stats-grid-top">
+                <div class="jpsm-rev-card jpsm-rev-today">
+                    <div class="jpsm-rev-top">
+                        <span class="jpsm-rev-label">Ventas Hoy</span>
+                        <span class="jpsm-rev-count"><?php echo $sales_today; ?></span>
+                    </div>
+                    <div class="jpsm-rev-split">
+                        <div class="jpsm-currency-line">
+                            <span class="jpsm-flag">🇲🇽</span>
+                            <span class="jpsm-val">$<?php echo number_format($rev_today_mxn, 2); ?></span>
+                        </div>
+                        <div class="jpsm-currency-line">
+                            <span class="jpsm-flag">🌍</span>
+                            <span class="jpsm-val">$<?php echo number_format($rev_today_usd, 2); ?></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="jpsm-rev-carousel">
+                    <div class="jpsm-rev-mini">
+                        <span class="jpsm-mini-label">Mes Actual</span>
+                        <div class="jpsm-mini-vals">
+                            <span>🇲🇽 $<?php echo number_format($rev_month_mxn, 0); ?></span>
+                            <span>🌍 $<?php echo number_format($rev_month_usd, 0); ?></span>
+                        </div>
+                    </div>
+                    <div class="jpsm-rev-mini">
+                        <span class="jpsm-mini-label">Histórico</span>
+                        <div class="jpsm-mini-vals">
+                            <span>🇲🇽 $<?php echo number_format($rev_total_mxn, 0); ?></span>
+                            <span>🌍 $<?php echo number_format($rev_total_usd, 0); ?></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Mobile Navigation -->
             <div class="jpsm-nav-tabs">
                 <button class="jpsm-tab-link active" onclick="jpsmOpenTab(event, 'jpsm-tab-new')">Nueva Venta</button>
@@ -477,15 +628,24 @@ class JPSM_Admin
                                 Pegar</button>
                         </div>
 
-                        <label>Paquete</label>
-                        <select id="package_type" name="package_type" required class="jpsm-input-lg">
-                            <option value="">Seleccionar paquete...</option>
-                            <option value="basic">📦 Básico</option>
-                            <option value="vip">⭐ VIP</option>
-                            <option value="full">💎 Full</option>
-                        </select>
-
-                        </select>
+                        <div class="jpsm-form-row">
+                            <div>
+                                <label>Paquete</label>
+                                <select id="package_type" name="package_type" required class="jpsm-input-lg">
+                                    <option value="">Seleccionar paquete...</option>
+                                    <option value="basic">📦 Básico</option>
+                                    <option value="vip">⭐ VIP</option>
+                                    <option value="full">💎 Full</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label>Región</label>
+                                <select id="region" name="region" required class="jpsm-input-lg">
+                                    <option value="national">🇲🇽 Nacional (MX)</option>
+                                    <option value="international">🌍 Internacional</option>
+                                </select>
+                            </div>
+                        </div>
 
                         <!-- VIP Sub-packages Dropdown (Conditional) -->
                         <div id="vip-subtype-container" style="display:none; margin-top:10px;">
@@ -506,12 +666,6 @@ class JPSM_Admin
                                 </label>
                             </div>
                         </div>
-
-                        <label>Región</label>
-                        <select id="region" name="region" required class="jpsm-input-lg">
-                            <option value="national">🇲🇽 Nacional (MX)</option>
-                            <option value="international">🌍 Internacional</option>
-                        </select>
 
                         <button type="submit" id="jpsm-submit-sale" class="jpsm-btn-block">Enviar Pedido 🚀</button>
                         <div id="jpsm-message"></div>
@@ -567,73 +721,241 @@ class JPSM_Admin
 
             <!-- TAB 3: STATS -->
             <div id="jpsm-tab-stats" class="jpsm-tab-content">
-                <?php
-                // Calculate Stats
-                $log = get_option('jpsm_sales_log', array());
-                $total_sales = count($log);
-                $sales_today = 0;
-                $today_date = current_time('Y-m-d');
-
-                $packages = array('basic' => 0, 'vip' => 0, 'full' => 0);
-                $regions = array('national' => 0, 'international' => 0);
-
-                foreach ($log as $entry) {
-                    // Count Today
-                    if (strpos($entry['time'], $today_date) === 0) {
-                        $sales_today++;
-                    }
-                    // Count Packages
-                    $pkg = isset($entry['package']) ? strtolower($entry['package']) : '';
-                    if (isset($packages[$pkg]))
-                        $packages[$pkg]++;
-
-                    // Count Regions
-                    $reg = isset($entry['region']) ? strtolower($entry['region']) : '';
-                    if (isset($regions[$reg]))
-                        $regions[$reg]++;
-                }
-                ?>
-
                 <div class="jpsm-stats-grid">
                     <div class="jpsm-stat-box">
-                        <span>Ventas Hoy</span>
-                        <h2 id="stat-today"><?php echo $sales_today; ?></h2>
-                    </div>
-                    <div class="jpsm-stat-box">
-                        <span>Total</span>
+                        <span>Ventas Totales</span>
                         <h2 id="stat-total"><?php echo $total_sales; ?></h2>
                     </div>
                 </div>
 
-                <!-- Charts -->
+                <div class="jpsm-stats-grid" style="grid-template-columns: 1fr 1fr; margin-top:0;">
+                    <div class="jpsm-stat-box">
+                        <span style="font-size:10px;">Ticket (🇲🇽)</span>
+                        <h2 style="font-size:16px;">$<?php echo number_format($avg_ticket_mxn, 0); ?></h2>
+                    </div>
+                    <div class="jpsm-stat-box">
+                        <span style="font-size:10px;">Ticket (🌍)</span>
+                        <h2 style="font-size:16px;">$<?php echo number_format($avg_ticket_usd, 0); ?></h2>
+                    </div>
+                </div>
+
+                <div class="jpsm-mobile-card" style="margin-top: -10px;">
+                    <h3 style="color:#f0883e;">🏆 Top 5 Clientes</h3>
+                    <div class="jpsm-top-clients">
+                        <?php foreach ($top_customers as $mail => $c): ?>
+                            <div class="jpsm-top-client-item">
+                                <span class="jpsm-client-email"><?php echo esc_html($mail); ?></span>
+                                <div class="jpsm-client-meta">
+                                    <span class="jpsm-client-count">Compras: <?php echo $c['count']; ?></span>
+                                    <span class="jpsm-client-total">
+                                        <?php
+                                        $parts = array();
+                                        if ($c['mxn'] > 0)
+                                            $parts[] = "$" . number_format($c['mxn'], 0);
+                                        if ($c['usd'] > 0)
+                                            $parts[] = "$" . number_format($c['usd'], 0) . " USD";
+                                        echo implode(' + ', $parts);
+                                        ?>
+                                    </span>
+                                </div>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
                 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-                <div class="jpsm-mobile-card">
-                    <h3>📦 Por Paquete</h3>
-                    <div style="height:200px; position:relative;">
-                        <canvas id="jpsmMobileChartPackage"></canvas>
+                <div class="jpsm-charts-grid">
+                    <div class="jpsm-mobile-card">
+                        <h3>👥 Recurrencia</h3>
+                        <div style="height:180px; position:relative;">
+                            <canvas id="jpsmMobileChartRecurrence"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="jpsm-mobile-card">
+                        <h3>📦 Por Paquete</h3>
+                        <div style="height:180px; position:relative;">
+                            <canvas id="jpsmMobileChartPackage"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="jpsm-mobile-card">
+                        <h3>🌍 Por Región</h3>
+                        <div style="height:180px; position:relative;">
+                            <canvas id="jpsmMobileChartRegion"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="jpsm-mobile-card">
+                        <h3>⏰ Horas Pico</h3>
+                        <div style="height:180px; position:relative;">
+                            <canvas id="jpsmMobileChartHourly"></canvas>
+                        </div>
                     </div>
                 </div>
 
-                <div class="jpsm-mobile-card">
-                    <h3>🌍 Por Región</h3>
-                    <div style="height:200px; position:relative;">
-                        <canvas id="jpsmMobileChartRegion"></canvas>
-                    </div>
-                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function () {
+                        // Common Chart Config
+                        Chart.defaults.color = '#8b949e';
+                        Chart.defaults.borderColor = '#30363d';
 
-                <script>             document.addEventListener('DOMContentLoaded', function () {                 // Common Chart Config                 Chart.defaults.color = '#8b949e';                 Chart.defaults.borderColor = '#30363d             ';
-                            // Package Chart                 new Chart(document.getElementById('jpsmMobileChartPackage'), {                     type: 'doughnut',                     data: {                         labels: ['Básico', 'VIP', 'Full'],                         datasets: [{                             data: [<?php echo $packages['basic']; ?>, <?php echo $packages['vip']; ?>, <?php echo $packages['full']; ?>],                             backgroundColor: ['#3fb950', '#a371f7', '#db61a2'],                             borderWidth: 0                         }]                     },                     options: {                         maintainAspectRatio: false,                         plugins: {                             legend: { position: 'right', labels: { boxWidth: 12 } }                         }                     }                 });
-                            // Region Chart                 new Chart(document.getElementById('jpsmMobileChartRegion'), {                     type: 'bar',                     data: {                         labels: ['Nacional', 'Internacional'],                         datasets: [{                             label: 'Ventas',                             data: [<?php echo $regions['national']; ?>, <?php echo $regions['international']; ?>],                             backgroundColor: ['#58a6ff', '#f0883e'],                             borderRadius: 4                         }]                     },                     options: {                         maintainAspectRatio: false,                         scales: {                             y: { beginAtZero: true, grid: { color: '#21262d' } },                             x: { grid: { display: false } }                         },                         plugins: { legend: { display: false } }                     }                 });             });
-                        </script>
-                    </div>
+                        // Package Chart
+                        var ctxPkg = document.getElementById('jpsmMobileChartPackage');
+                        if (ctxPkg) {
+                            new Chart(ctxPkg, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Básico', 'VIP', 'Full'],
+                                    datasets: [{
+                                        data: [<?php echo $packages['basic']; ?>, <?php echo $packages['vip']; ?>,
+                                            <?php echo $packages['full']; ?>
+                                        ],
+                                        backgroundColor: ['#3fb950', '#a371f7', '#db61a2'],
+                                        borderWidth: 0
+                                    }]
+                                },
+                                options: {
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'right',
+                                            labels: {
+                                                boxWidth: 12
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
 
-                </div>
+                        // Region Chart
+                        var ctxReg = document.getElementById('jpsmMobileChartRegion');
+                        if (ctxReg) {
+                            new Chart(ctxReg, {
+                                type: 'bar',
+                                data: {
+                                    labels: ['Nac.', 'Int.'],
+                                    datasets: [{
+                                        label: 'Ventas',
+                                        data: [<?php echo $regions['national']; ?>,
+                                            <?php echo $regions['international']; ?>
+                                        ],
+                                        backgroundColor: ['#58a6ff', '#f0883e'],
+                                        borderRadius: 4
+                                    }]
+                                },
+                                options: {
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            grid: {
+                                                color: '#21262d'
+                                            }
+                                        },
+                                        x: {
+                                            grid: {
+                                                display: false
+                                            }
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        }
+                                    }
+                                }
+                            });
+                        }
 
-                <script>     function jpsmOpenTab(evt, tabName) { var i, tabcontent, tablinks; tabcontent = document.getElementsByClassName("jpsm-tab-content"); for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; } tablinks = document.getElementsByClassName("jpsm-tab-link"); for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); } document.getElementById(tabName).style.display = "block"; evt.currentTarget.className += " active"; }
+                        // Recurrence Chart
+                        var ctxRec = document.getElementById('jpsmMobileChartRecurrence');
+                        if (ctxRec) {
+                            new Chart(ctxRec, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: ['Nuevos', 'Recurrentes'],
+                                    datasets: [{
+                                        data: [<?php echo $new_clients; ?>, <?php echo $recurring_clients; ?>],
+                                        backgroundColor: ['#2ea043', '#f85149'],
+                                        borderWidth: 0
+                                    }]
+                                },
+                                options: {
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'right',
+                                            labels: {
+                                                boxWidth: 12
+                                            }
+                                        }
+                                    }
+                                }
+                            });
+                        }
+
+                        // Hourly Chart
+                        var ctxHour = document.getElementById('jpsmMobileChartHourly');
+                        if (ctxHour) {
+                            new Chart(ctxHour, {
+                                type: 'line',
+                                data: {
+                                    labels: ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'],
+                                    datasets: [{
+                                        label: 'Ventas',
+                                        data: [
+                                            <?php
+                                            $points = array();
+                                            for ($i = 0; $i < 24; $i += 2) {
+                                                $points[] = $hourly_sales[$i];
+                                            }
+                                            echo implode(',', $points);
+                                            ?>
+                                        ],
+                                        borderColor: '#f0883e',
+                                        backgroundColor: 'rgba(240, 136, 62, 0.1)',
+                                        fill: true,
+                                        tension: 0.4,
+                                        pointRadius: 2,
+                                        pointBackgroundColor: '#f0883e'
+                                    }]
+                                },
+                                options: {
+                                    maintainAspectRatio: false,
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            display: false
+                                        },
+                                        x: {
+                                            grid: {
+                                                display: false
+                                            }
+                                        }
+                                    },
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        }
+                                    }
+                                }
+                            });
+                        }
+                    });
                 </script>
-                <?php
-                return ob_get_clean();
+            </div>
+        </div>
+
+        </div>
+
+        <script>     function jpsmOpenTab(evt, tabName) { var i, tabcontent, tablinks; tabcontent = document.getElementsByClassName("jpsm-tab-content"); for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; } tablinks = document.getElementsByClassName("jpsm-tab-link"); for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); } document.getElementById(tabName).style.display = "block"; evt.currentTarget.className += " active"; }
+        </script>
+        <?php
+        return ob_get_clean();
     }
 
     /**
@@ -693,6 +1015,19 @@ class JPSM_Admin
 
         // Access Key for Mobile
         register_setting('jpsm_settings_templates', 'jpsm_access_key');
+
+        // Pricing - National (MXN)
+        register_setting('jpsm_settings_templates', 'jpsm_price_mxn_basic');
+        register_setting('jpsm_settings_templates', 'jpsm_price_mxn_vip_videos');
+        register_setting('jpsm_settings_templates', 'jpsm_price_mxn_vip_pelis');
+        register_setting('jpsm_settings_templates', 'jpsm_price_mxn_vip_basic');
+        register_setting('jpsm_settings_templates', 'jpsm_price_mxn_full');
+
+        // Pricing - International (USD)
+        register_setting('jpsm_settings_templates', 'jpsm_price_usd_vip_videos');
+        register_setting('jpsm_settings_templates', 'jpsm_price_usd_vip_pelis');
+        register_setting('jpsm_settings_templates', 'jpsm_price_usd_vip_basic');
+        register_setting('jpsm_settings_templates', 'jpsm_price_usd_full');
     }
 
     /**
@@ -701,48 +1036,48 @@ class JPSM_Admin
     public function display_dashboard_page()
     {
         ?>
-                <div class="wrap">
-                    <h1>Dashboard - JetPack Store Manager</h1>
+        <div class="wrap">
+            <h1>Dashboard - JetPack Store Manager</h1>
 
-                    <div class="jpsm-stats-row" style="display:flex; gap:20px; margin-bottom:20px;">
-                        <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1;">
-                            <h3 style="margin-top:0;">Ventas Totales</h3>
-                            <p class="jpsm-stat-number" id="stat-total" style="font-size:32px; font-weight:bold; margin:0;">0</p>
-                        </div>
-                        <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1;">
-                            <h3 style="margin-top:0;">Ventas Hoy</h3>
-                            <p class="jpsm-stat-number" id="stat-today" style="font-size:32px; font-weight:bold; margin:0;">0</p>
-                        </div>
-                    </div>
-
-                    <div class="jpsm-charts-row" style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px;">
-                        <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1; min-width:300px;">
-                            <h3 style="margin-top:0;">Por Paquete</h3>
-                            <canvas id="chart-packages" style="max-height:300px;"></canvas>
-                        </div>
-                        <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1; min-width:300px;">
-                            <h3 style="margin-top:0;">Por Región</h3>
-                            <canvas id="chart-regions" style="max-height:300px;"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc;">
-                        <h3 style="margin-top:0;">Últimos Movimientos</h3>
-                        <table class="wp-list-table widefat fixed striped">
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>Email</th>
-                                    <th>Paquete</th>
-                                    <th>Región</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dashboard-history-body"></tbody>
-                        </table>
-                    </div>
+            <div class="jpsm-stats-row" style="display:flex; gap:20px; margin-bottom:20px;">
+                <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1;">
+                    <h3 style="margin-top:0;">Ventas Totales</h3>
+                    <p class="jpsm-stat-number" id="stat-total" style="font-size:32px; font-weight:bold; margin:0;">0</p>
                 </div>
-                <?php
+                <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1;">
+                    <h3 style="margin-top:0;">Ventas Hoy</h3>
+                    <p class="jpsm-stat-number" id="stat-today" style="font-size:32px; font-weight:bold; margin:0;">0</p>
+                </div>
+            </div>
+
+            <div class="jpsm-charts-row" style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px;">
+                <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1; min-width:300px;">
+                    <h3 style="margin-top:0;">Por Paquete</h3>
+                    <canvas id="chart-packages" style="max-height:300px;"></canvas>
+                </div>
+                <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1; min-width:300px;">
+                    <h3 style="margin-top:0;">Por Región</h3>
+                    <canvas id="chart-regions" style="max-height:300px;"></canvas>
+                </div>
+            </div>
+
+            <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc;">
+                <h3 style="margin-top:0;">Últimos Movimientos</h3>
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Email</th>
+                            <th>Paquete</th>
+                            <th>Región</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dashboard-history-body"></tbody>
+                </table>
+            </div>
+        </div>
+        <?php
     }
 
 
@@ -752,76 +1087,89 @@ class JPSM_Admin
     public function display_registration_page()
     {
         ?>
-                <div class="wrap">
-                    <h1>Registrar Nueva Venta</h1>
-                    <div class="jpsm-card"
-                        style="background: white; padding: 20px; max-width: 600px; border: 1px solid #ccc; border-radius: 5px;">
-                        <form id="jpsm-registration-form">
-                            <table class="form-table">
-                                <tr valign="top">
-                                    <th scope="row"><label for="client_email">Correo del Cliente</label></th>
-                                    <td><input type="email" id="client_email" name="client_email" class="regular-text" required
-                                            placeholder="cliente@email.com" /></td>
-                                </tr>
-                                <tr valign="top">
-                                    <th scope="row"><label for="package_type">Paquete</label></th>
-                                    <td>
-                                        <select id="package_type" name="package_type" required>
-                                            <option value="">Selecciona un paquete...</option>
-                                            <option value="basic">Básico</option>
-                                            <option value="vip">VIP</option>
-                                            <option value="full">Full</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                                <tr valign="top">
-                                    <th scope="row"><label for="region">Región</label></th>
-                                    <td>
-                                        <select id="region" name="region" required>
-                                            <option value="national">Nacional (MX)</option>
-                                            <option value="international">Internacional</option>
-                                        </select>
-                                    </td>
-                                </tr>
-                            </table>
-                            <p class="submit">
-                                <button type="submit" id="jpsm-submit-sale" class="button button-primary">Enviar y Registrar</button>
-                                <span class="spinner" id="jpsm-spinner" style="float:none;"></span>
-                            </p>
-                            <div id="jpsm-message"></div>
-                        </form>
-                    </div>
+        <div class="wrap">
+            <h1>Registrar Nueva Venta</h1>
+            <div class="jpsm-card"
+                style="background: white; padding: 20px; max-width: 600px; border: 1px solid #ccc; border-radius: 5px;">
+                <form id="jpsm-registration-form">
+                    <table class="form-table">
+                        <tr valign="top">
+                            <th scope="row"><label for="client_email">Correo del Cliente</label></th>
+                            <td><input type="email" id="client_email" name="client_email" class="regular-text" required
+                                    placeholder="cliente@email.com" /></td>
+                        </tr>
+                        <tr valign="top">
+                            <th scope="row"><label for="package_type">Paquete</label></th>
+                            <td>
+                                <select id="package_type" name="package_type" required>
+                                    <option value="">Selecciona un paquete...</option>
+                                    <option value="basic">Básico</option>
+                                    <option value="vip">VIP</option>
+                                    <option value="full">Full</option>
+                                </select>
+                            </td>
+                        </tr>
+                        <tr valign="top" id="vip-subtype-row" style="display:none;">
+                            <th scope="row"><label>Variante VIP</label></th>
+                            <td>
+                                <fieldset>
+                                    <label><input type="radio" name="vip_subtype" value="vip_videos" checked> <span>VIP +
+                                            VIDEOS</span></label><br>
+                                    <label><input type="radio" name="vip_subtype" value="vip_pelis"> <span>VIP +
+                                            PELIS</span></label><br>
+                                    <label><input type="radio" name="vip_subtype" value="vip_basic"> <span>VIP +
+                                            BÁSICO</span></label>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr valign="top">
+                            <th scope="row"><label for="region">Región</label></th>
+                            <td>
+                                <select id="region" name="region" required>
+                                    <option value="national">Nacional (MX)</option>
+                                    <option value="international">Internacional</option>
+                                </select>
+                            </td>
+                        </tr>
+                    </table>
+                    <p class="submit">
+                        <button type="submit" id="jpsm-submit-sale" class="button button-primary">Enviar y Registrar</button>
+                        <span class="spinner" id="jpsm-spinner" style="float:none;"></span>
+                    </p>
+                    <div id="jpsm-message"></div>
+                </form>
+            </div>
 
-                    <hr>
+            <hr>
 
-                    <h2>Historial Reciente (Sesión actual)</h2>
+            <h2>Historial Reciente (Sesión actual)</h2>
 
-                    <div class="jpsm-actions-bar" style="height: 40px; margin-bottom: 8px;">
-                        <button id='jpsm-bulk-delete'
-                            style='display:none; background: #f85149; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;'>
-                            Borrar Seleccionados (<span id='jpsm-selected-count'>0</span>)
-                        </button>
-                    </div>
+            <div class="jpsm-actions-bar" style="height: 40px; margin-bottom: 8px;">
+                <button id='jpsm-bulk-delete'
+                    style='display:none; background: #f85149; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;'>
+                    Borrar Seleccionados (<span id='jpsm-selected-count'>0</span>)
+                </button>
+            </div>
 
-                    <div id="jpsm-recent-activity">
-                        <table class="wp-list-table widefat fixed striped">
-                            <thead>
-                                <tr>
-                                    <th style='width:30px; padding-left:12px;'><input type='checkbox' id='jpsm-check-all'
-                                            style='width:20px; height:20px;'></th>
-                                    <th>Email</th>
-                                    <th>Paquete</th>
-                                    <th>Hora</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="jpsm-activity-body">
-                                <!-- Filled by JS -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <?php
+            <div id="jpsm-recent-activity">
+                <table class="wp-list-table widefat fixed striped">
+                    <thead>
+                        <tr>
+                            <th style='width:30px; padding-left:12px;'><input type='checkbox' id='jpsm-check-all'
+                                    style='width:20px; height:20px;'></th>
+                            <th>Email</th>
+                            <th>Paquete</th>
+                            <th>Hora</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="jpsm-activity-body">
+                        <!-- Filled by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <?php
     }
 
 
@@ -832,72 +1180,149 @@ class JPSM_Admin
     {
         // Simple Settings Form
         ?>
-                <div class="wrap">
-                    <h1>Configuración de JetPack Store Manager</h1>
-                    <form method="post" action="options.php">
-                        <?php
-                        echo '<h2>Plantillas de Correo</h2>';
-                        settings_fields('jpsm_settings_templates');
-                        do_settings_sections('jpsm_settings_templates');
-
-                        ?>
-                        <p>Usa <code>{nombre}</code> como placeholder si lo necesitas (implementación futura).</p>
-                        <table class="form-table">
-                            <tr valign="top">
-                                <th scope="row">Paquete Básico</th>
-                                <td>
-                                    <?php wp_editor(get_option('jpsm_email_template_basic'), 'jpsm_email_template_basic', array('textarea_rows' => 10)); ?>
-                                </td>
-                            </tr>
-                            <tr valign="top">
-                                <th scope="row">VIP + VIDEOS</th>
-                                <td>
-                                    <?php wp_editor(get_option('jpsm_email_template_vip_videos'), 'jpsm_email_template_vip_videos', array('textarea_rows' => 10)); ?>
-                                </td>
-                            </tr>
-                            <tr valign="top">
-                                <th scope="row">VIP + Pelis</th>
-                                <td>
-                                    <?php wp_editor(get_option('jpsm_email_template_vip_pelis'), 'jpsm_email_template_vip_pelis', array('textarea_rows' => 10)); ?>
-                                </td>
-                            </tr>
-                            <tr valign="top">
-                                <th scope="row">VIP + Básico</th>
-                                <td>
-                                    <?php wp_editor(get_option('jpsm_email_template_vip_basic'), 'jpsm_email_template_vip_basic', array('textarea_rows' => 10)); ?>
-                                </td>
-                            </tr>
-                            <tr valign="top">
-                                <th scope="row">Paquete Full</th>
-                                <td>
-                                    <?php wp_editor(get_option('jpsm_email_template_full'), 'jpsm_email_template_full', array('textarea_rows' => 10)); ?>
-                                </td>
-                            </tr>
-                        </table>
-
-                        <hr>
-                        <h2>🔑 Acceso Móvil</h2>
-                        <p>Configura una clave secreta para acceder desde tu celular sin iniciar sesión en WordPress.</p>
-                        <table class="form-table">
-                            <tr valign="top">
-                                <th scope="row">Clave de Acceso</th>
-                                <td>
-                                    <input type="text" name="jpsm_access_key"
-                                        value="<?php echo esc_attr(get_option('jpsm_access_key')); ?>" class="regular-text"
-                                        placeholder="Ej: miClaveSecreta123" />
-                                    <p class="description">
-                                        Tu URL de acceso será:
-                                        <code><?php echo esc_url(home_url('/gestion/?key=')); ?><strong>[TU_CLAVE]</strong></code><br>
-                                        Guarda esta URL en los favoritos de tu celular.
-                                    </p>
-                                </td>
-                            </tr>
-                        </table>
-
-                        <?php submit_button(); ?>
-                    </form>
-                </div>
+        <div class="wrap">
+            <h1>Configuración de JetPack Store Manager</h1>
+            <form method="post" action="options.php">
                 <?php
+                echo '<h2>Plantillas de Correo</h2>';
+                settings_fields('jpsm_settings_templates');
+                do_settings_sections('jpsm_settings_templates');
+
+                ?>
+                <p>Usa <code>{nombre}</code> como placeholder si lo necesitas (implementación futura).</p>
+                <table class="form-table">
+                    <tr valign="top">
+                        <th scope="row">Paquete Básico</th>
+                        <td>
+                            <?php wp_editor(get_option('jpsm_email_template_basic'), 'jpsm_email_template_basic', array('textarea_rows' => 10)); ?>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">VIP + VIDEOS</th>
+                        <td>
+                            <?php wp_editor(get_option('jpsm_email_template_vip_videos'), 'jpsm_email_template_vip_videos', array('textarea_rows' => 10)); ?>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">VIP + Pelis</th>
+                        <td>
+                            <?php wp_editor(get_option('jpsm_email_template_vip_pelis'), 'jpsm_email_template_vip_pelis', array('textarea_rows' => 10)); ?>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">VIP + Básico</th>
+                        <td>
+                            <?php wp_editor(get_option('jpsm_email_template_vip_basic'), 'jpsm_email_template_vip_basic', array('textarea_rows' => 10)); ?>
+                        </td>
+                    </tr>
+                    <tr valign="top">
+                        <th scope="row">Paquete Full</th>
+                        <td>
+                            <?php wp_editor(get_option('jpsm_email_template_full'), 'jpsm_email_template_full', array('textarea_rows' => 10)); ?>
+                        </td>
+                    </tr>
+                </table>
+
+                <hr>
+                <h2>💰 Configuración de Precios</h2>
+                <div style="display: flex; gap: 40px; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 300px;">
+                        <h3>🇲🇽 Precios Nacionales (MXN)</h3>
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">Paquete Básico</th>
+                                <td><input type="number" step="0.01" name="jpsm_price_mxn_basic"
+                                        value="<?php echo esc_attr(get_option('jpsm_price_mxn_basic')); ?>" class="small-text">
+                                    MXN</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">VIP + Videos</th>
+                                <td><input type="number" step="0.01" name="jpsm_price_mxn_vip_videos"
+                                        value="<?php echo esc_attr(get_option('jpsm_price_mxn_vip_videos')); ?>"
+                                        class="small-text"> MXN</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">VIP + Películas</th>
+                                <td><input type="number" step="0.01" name="jpsm_price_mxn_vip_pelis"
+                                        value="<?php echo esc_attr(get_option('jpsm_price_mxn_vip_pelis')); ?>"
+                                        class="small-text"> MXN</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">VIP + Básico</th>
+                                <td><input type="number" step="0.01" name="jpsm_price_mxn_vip_basic"
+                                        value="<?php echo esc_attr(get_option('jpsm_price_mxn_vip_basic')); ?>"
+                                        class="small-text"> MXN</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Paquete Full</th>
+                                <td><input type="number" step="0.01" name="jpsm_price_mxn_full"
+                                        value="<?php echo esc_attr(get_option('jpsm_price_mxn_full')); ?>" class="small-text">
+                                    MXN</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div style="flex: 1; min-width: 300px;">
+                        <h3>🌍 Precios Internacionales (USD)</h3>
+                        <table class="form-table">
+                            <tr>
+                                <th scope="row">VIP + Videos</th>
+                                <td><input type="number" step="0.01" name="jpsm_price_usd_vip_videos"
+                                        value="<?php echo esc_attr(get_option('jpsm_price_usd_vip_videos')); ?>"
+                                        class="small-text"> USD</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">VIP + Películas</th>
+                                <td><input type="number" step="0.01" name="jpsm_price_usd_vip_pelis"
+                                        value="<?php echo esc_attr(get_option('jpsm_price_usd_vip_pelis')); ?>"
+                                        class="small-text"> USD</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">VIP + Básico</th>
+                                <td><input type="number" step="0.01" name="jpsm_price_usd_vip_basic"
+                                        value="<?php echo esc_attr(get_option('jpsm_price_usd_vip_basic')); ?>"
+                                        class="small-text"> USD</td>
+                            </tr>
+                            <tr>
+                                <th scope="row">Paquete Full</th>
+                                <td><input type="number" step="0.01" name="jpsm_price_usd_full"
+                                        value="<?php echo esc_attr(get_option('jpsm_price_usd_full')); ?>" class="small-text">
+                                    USD</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+        </div>
+
+        <hr>
+        <h2>🔒 Seguridad</h2>
+        <table class="form-table">
+            <tr valign="top">
+                <th scope="row">Llave de Acceso (App Móvil)</th>
+                <td>
+                    <input type="text" name="jpsm_access_key" value="<?php echo esc_attr(get_option('jpsm_access_key')); ?>"
+                        class="regular-text">
+                    <p class="description">Usa esta llave para entrar desde la App Móvil sin ser administrador.</p>
+                </td>
+            </tr>
+        </table>
+
+        <hr>
+        <h2>📜 Mantenimiento de Historial</h2>
+        <div class="jpsm-card" style="background:#fff8e6; border:1px solid #ffd666; padding:15px; border-radius:6px;">
+            <h3 style="margin-top:0; color:#856404;">⚠️ Fijar Precios Históricos</h3>
+            <p>Si tienes registros antiguos que aparecen en $0.00, este botón les asignará permanentemente el precio que tienes
+                configurado arriba hoy.</p>
+            <p><strong>Usa esto antes de cambiar tus precios</strong> para asegurar que el historial del pasado no se altere.
+            </p>
+            <button type="button" id="jpsm-freeze-prices" class="button button-secondary">Fijar Precios en Historial ❄️</button>
+            <span id="freeze-status" style="margin-left:10px;"></span>
+        </div>
+
+        <?php submit_button(); ?>
+        </form>
+        </div>
+        <?php
     }
 
     public function enqueue_styles()
@@ -1016,6 +1441,14 @@ class JPSM_Admin
         $sales_engine = new JPSM_Sales();
         $result = $sales_engine->process_sale($email, $package, $region, $template_body);
 
+        // Determine Price and Currency with improved matching
+        $currency = ($region === 'national') ? 'MXN' : 'USD';
+        $amount = $this->get_entry_price(array(
+            'package' => $package, // This handles "VIP + Videos" etc.
+            'region' => $region,
+            'currency' => $currency
+        ));
+
         // Save to local log (regardless of email success for tracking)
         $log_entry = array(
             'id' => uniqid('sale_'),
@@ -1023,6 +1456,8 @@ class JPSM_Admin
             'email' => $email,
             'package' => $package,
             'region' => $region,
+            'amount' => $amount,
+            'currency' => $currency,
             'status' => $result['email_sent'] ? 'Completado' : 'Falló'
         );
 
@@ -1195,10 +1630,91 @@ class JPSM_Admin
             $provided_key = sanitize_text_field($_GET['key']);
         }
 
-        if (!empty($stored_key) && $provided_key === $stored_key) {
-            return true;
-        }
-
         return false;
     }
+
+    /**
+     * Helper to resolve price based on package name and region (retroactive fallback)
+     */
+    private function get_entry_price($entry)
+    {
+        $pkg = isset($entry['package']) ? mb_strtolower($entry['package']) : '';
+        $region = isset($entry['region']) ? strtolower($entry['region']) : 'national';
+        $cur = (isset($entry['currency'])) ? strtolower($entry['currency']) : (($region === 'international') ? 'usd' : 'mxn');
+
+        $slug = 'basic';
+        if (strpos($pkg, 'full') !== false) {
+            $slug = 'full';
+        } elseif (strpos($pkg, 'videos') !== false) {
+            $slug = 'vip_videos';
+        } elseif (strpos($pkg, 'películas') !== false || strpos($pkg, 'pelis') !== false) {
+            $slug = 'vip_pelis';
+        } elseif (strpos($pkg, 'básico') !== false && strpos($pkg, 'vip') !== false) {
+            $slug = 'vip_basic';
+        } elseif (strpos($pkg, 'vip') !== false) {
+            $slug = 'vip_videos'; // Default for old generic VIP logs
+        }
+
+        $option_name = "jpsm_price_{$cur}_{$slug}";
+        return floatval(get_option($option_name, 0));
+    }
+
+    /**
+     * AJAX handler to "freeze" historical prices into the logs.
+     */
+    public function freeze_prices_ajax()
+    {
+        if (!current_user_can('manage_options')) {
+            wp_send_json_error('No tienes permisos.');
+        }
+
+        $log = get_option('jpsm_sales_log', array());
+        if (!is_array($log) || empty($log)) {
+            wp_send_json_success('El historial está vacío.');
+        }
+
+        $updated_count = 0;
+        foreach ($log as &$entry) {
+            // Only update if amount is missing or 0
+            $amt = isset($entry['amount']) ? floatval($entry['amount']) : 0;
+            if ($amt <= 0) {
+                $price = $this->get_entry_price($entry);
+                $entry['amount'] = $price;
+                $entry['currency'] = isset($entry['currency']) ? $entry['currency'] : (($entry['region'] === 'international') ? 'USD' : 'MXN');
+                $updated_count++;
+            }
+        }
+
+        if ($updated_count > 0) {
+            update_option('jpsm_sales_log', $log);
+            wp_send_json_success("Se han fijado los precios en {$updated_count} registros.");
+        } else {
+            wp_send_json_success('Todos los registros ya tienen precios fijados.');
+        }
+    }
 }
+
+// Add inline script to footer to force background color on WP Admin wrappers
+add_action('admin_footer', function () {
+    if (isset($_GET['page']) && ($_GET['page'] === 'jetpack-store-manager' || $_GET['page'] === 'jpsm-settings')) {
+        ?>
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                // Force dark background on all parent containers
+                var targets = ['html', 'body', '#wpwrap', '#wpcontent', '#wpbody', '#wpbody-content', '.auto-fold #wpcontent'];
+                targets.forEach(function (sel) {
+                    var els = document.querySelectorAll(sel);
+                    els.forEach(function (el) {
+                        el.style.setProperty('background-color', '#010409', 'important');
+                        el.style.setProperty('min-height', '100vh', 'important');
+                    });
+                });
+
+                // Also fix sidebar background if needed
+                var menu = document.getElementById('adminmenuback');
+                if (menu) menu.style.backgroundColor = '#0d1117';
+            });
+        </script>
+        <?php
+    }
+});

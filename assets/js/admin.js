@@ -137,5 +137,42 @@ jQuery(document).ready(function ($) {
                         .html('❌ Error de conexión').slideDown();
                 });
         });
+        // Show/Hide VIP Subtypes in Admin Form
+        $('#package_type').on('change', function () {
+            if ($(this).val() === 'vip') {
+                $('#vip-subtype-row').slideDown();
+            } else {
+                $('#vip-subtype-row').slideUp();
+            }
+        });
+
+        // Handle Price Freeze button
+        $('#jpsm-freeze-prices').on('click', function () {
+            var $btn = $(this);
+            var $status = $('#freeze-status');
+
+            if (!confirm('¿Estás seguro? Esto fijará los precios actuales en todos los registros que hoy están en cero.')) return;
+
+            $btn.prop('disabled', true).text('Procesando... ❄️');
+            $status.text('Actualizando historial...').css('color', '#666');
+
+            $.post(jpsm_data.ajax_url, {
+                action: 'jpsm_freeze_prices',
+                nonce: jpsm_data.nonce
+            })
+                .done(function (response) {
+                    if (response.success) {
+                        $status.text('✅ ' + response.data).css('color', 'green');
+                        $btn.text('Fijado correctamente').addClass('button-disabled');
+                    } else {
+                        $status.text('❌ Error: ' + response.data).css('color', 'red');
+                        $btn.prop('disabled', false).text('Fijar Precios en Historial ❄️');
+                    }
+                })
+                .fail(function () {
+                    $status.text('❌ Error de conexión').css('color', 'red');
+                    $btn.prop('disabled', false).text('Fijar Precios en Historial ❄️');
+                });
+        });
     }
 });
