@@ -208,13 +208,16 @@ class JPSM_Admin
                     jpsm_vars.history.forEach(function(item) {
                         var tr = document.createElement('tr');
                         tr.innerHTML = `
-                            <td style='padding-left:12px;'><input type='checkbox' class='jpsm-log-check' value='\${item.id}' style='width:20px; height:20px;'></td>
-                            <td>\${item.email}</td>
-                            <td>\${item.package}</td>
-                            <td>\${item.time.split(' ')[0]}</td>
-                            <td style='text-align:right;'>
-                                <button class='jpsm-resend-email' data-id='\${item.id}' style='background:transparent; border:none; color:var(--jpsm-blue); cursor:pointer; margin-right:8px; font-size:16px;'>🔁</button>
-                                <button class='jpsm-delete-log' data-id='\${item.id}' style='background:transparent; border:none; color:var(--jpsm-text-tertiary); cursor:pointer; font-size:16px;'>✕</button>
+                            <td class='jpsm-col-check'>
+                                <input type='checkbox' class='jpsm-log-check' value='\${item.id}'>
+                            </td>
+                            <td class='jpsm-col-info'>
+                                <div class='jpsm-info-email'>\${item.email}</div>
+                                <div class='jpsm-info-subtext'>\${item.package} • \${item.time}</div>
+                            </td>
+                            <td class='jpsm-col-actions'>
+                                <button class='jpsm-resend-email' data-id='\${item.id}'>🔁</button>
+                                <button class='jpsm-delete-log' data-id='\${item.id}'>✕</button>
                             </td>
                         `;
                         tbody.appendChild(tr);
@@ -522,10 +525,9 @@ class JPSM_Admin
                         <table class="jpsm-mobile-table">
                             <thead>
                                 <tr>
-                                    <th>Email</th>
-                                    <th>Paquete</th>
-                                    <th>Fecha</th>
-                                    <th></th>
+                                    <th style='width:40px;'></th>
+                                    <th>Información</th>
+                                    <th style='text-align:right;'>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="jpsm-activity-body-target"></tbody>
@@ -538,19 +540,21 @@ class JPSM_Admin
             <div id="jpsm-tab-history" class="jpsm-tab-content">
                 <div class="jpsm-mobile-card">
                     <h3>📋 Historial Completo</h3>
-                    <div style="text-align:right; margin-bottom:10px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap:10px;">
+                        <button id="jpsm-bulk-delete" style="display:none; font-size:12px; padding:8px 12px;">
+                            Borrar Seleccionados (<span id="jpsm-selected-count">0</span>)
+                        </button>
                         <button onclick="if(confirm('¿Borrar TODO el historial?')) { jpsmDeleteAllLogs(); }"
-                            style="background:transparent; border:1px solid var(--jpsm-danger); color:var(--jpsm-danger); padding:6px 12px; border-radius:6px; font-size:12px;">🗑️
-                            Borrar Historial</button>
+                            style="background:transparent; border:1px solid var(--jpsm-danger); color:var(--jpsm-danger); padding:8px 12px; border-radius:6px; font-size:12px; margin-left:auto;">🗑️
+                            Vaciado Total</button>
                     </div>
                     <div class="jpsm-history-list">
                         <table class="jpsm-mobile-table">
                             <thead>
                                 <tr>
-                                    <th>Email</th>
-                                    <th>Paquete</th>
-                                    <th>Fecha</th>
-                                    <th></th>
+                                    <th style='width:40px;'><input type='checkbox' id='jpsm-check-all'></th>
+                                    <th>Información</th>
+                                    <th style='text-align:right;'>Acciones</th>
                                 </tr>
                             </thead>
                             <tbody class="jpsm-activity-body-target">
@@ -618,18 +622,18 @@ class JPSM_Admin
                     </div>
                 </div>
 
-                <script>             document.addEventListener('DOMContentLoaded', function () {                 // Common Chart Config                 Chart.defaults.color = '#8b949e';                 Chart.defaults.borderColor = '#30363d';
-                    // Package Chart                 new Chart(document.getElementById('jpsmMobileChartPackage'), {                     type: 'doughnut',                     data: {                         labels: ['Básico', 'VIP', 'Full'],                         datasets: [{                             data: [<?php echo $packages['basic']; ?>, <?php echo $packages['vip']; ?>, <?php echo $packages['full']; ?>],                             backgroundColor: ['#3fb950', '#a371f7', '#db61a2'],                             borderWidth: 0                         }]                     },                     options: {                         maintainAspectRatio: false,                         plugins: {                             legend: { position: 'right', labels: { boxWidth: 12 } }                         }                     }                 });
-                    // Region Chart                 new Chart(document.getElementById('jpsmMobileChartRegion'), {                     type: 'bar',                     data: {                         labels: ['Nacional', 'Internacional'],                         datasets: [{                             label: 'Ventas',                             data: [<?php echo $regions['national']; ?>, <?php echo $regions['international']; ?>],                             backgroundColor: ['#58a6ff', '#f0883e'],                             borderRadius: 4                         }]                     },                     options: {                         maintainAspectRatio: false,                         scales: {                             y: { beginAtZero: true, grid: { color: '#21262d' } },                             x: { grid: { display: false } }                         },                         plugins: { legend: { display: false } }                     }                 });             });
+                <script>             document.addEventListener('DOMContentLoaded', function () {                 // Common Chart Config                 Chart.defaults.color = '#8b949e';                 Chart.defaults.borderColor = '#30363d             ';
+                            // Package Chart                 new Chart(document.getElementById('jpsmMobileChartPackage'), {                     type: 'doughnut',                     data: {                         labels: ['Básico', 'VIP', 'Full'],                         datasets: [{                             data: [<?php echo $packages['basic']; ?>, <?php echo $packages['vip']; ?>, <?php echo $packages['full']; ?>],                             backgroundColor: ['#3fb950', '#a371f7', '#db61a2'],                             borderWidth: 0                         }]                     },                     options: {                         maintainAspectRatio: false,                         plugins: {                             legend: { position: 'right', labels: { boxWidth: 12 } }                         }                     }                 });
+                            // Region Chart                 new Chart(document.getElementById('jpsmMobileChartRegion'), {                     type: 'bar',                     data: {                         labels: ['Nacional', 'Internacional'],                         datasets: [{                             label: 'Ventas',                             data: [<?php echo $regions['national']; ?>, <?php echo $regions['international']; ?>],                             backgroundColor: ['#58a6ff', '#f0883e'],                             borderRadius: 4                         }]                     },                     options: {                         maintainAspectRatio: false,                         scales: {                             y: { beginAtZero: true, grid: { color: '#21262d' } },                             x: { grid: { display: false } }                         },                         plugins: { legend: { display: false } }                     }                 });             });
+                        </script>
+                    </div>
+
+                </div>
+
+                <script>     function jpsmOpenTab(evt, tabName) { var i, tabcontent, tablinks; tabcontent = document.getElementsByClassName("jpsm-tab-content"); for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; } tablinks = document.getElementsByClassName("jpsm-tab-link"); for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); } document.getElementById(tabName).style.display = "block"; evt.currentTarget.className += " active"; }
                 </script>
-            </div>
-
-        </div>
-
-        <script>     function jpsmOpenTab(evt, tabName) { var i, tabcontent, tablinks; tabcontent = document.getElementsByClassName("jpsm-tab-content"); for (i = 0; i < tabcontent.length; i++) { tabcontent[i].style.display = "none"; } tablinks = document.getElementsByClassName("jpsm-tab-link"); for (i = 0; i < tablinks.length; i++) { tablinks[i].className = tablinks[i].className.replace(" active", ""); } document.getElementById(tabName).style.display = "block"; evt.currentTarget.className += " active"; }
-        </script>
-        <?php
-        return ob_get_clean();
+                <?php
+                return ob_get_clean();
     }
 
     /**
@@ -697,48 +701,48 @@ class JPSM_Admin
     public function display_dashboard_page()
     {
         ?>
-        <div class="wrap">
-            <h1>Dashboard - JetPack Store Manager</h1>
+                <div class="wrap">
+                    <h1>Dashboard - JetPack Store Manager</h1>
 
-            <div class="jpsm-stats-row" style="display:flex; gap:20px; margin-bottom:20px;">
-                <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1;">
-                    <h3 style="margin-top:0;">Ventas Totales</h3>
-                    <p class="jpsm-stat-number" id="stat-total" style="font-size:32px; font-weight:bold; margin:0;">0</p>
-                </div>
-                <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1;">
-                    <h3 style="margin-top:0;">Ventas Hoy</h3>
-                    <p class="jpsm-stat-number" id="stat-today" style="font-size:32px; font-weight:bold; margin:0;">0</p>
-                </div>
-            </div>
+                    <div class="jpsm-stats-row" style="display:flex; gap:20px; margin-bottom:20px;">
+                        <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1;">
+                            <h3 style="margin-top:0;">Ventas Totales</h3>
+                            <p class="jpsm-stat-number" id="stat-total" style="font-size:32px; font-weight:bold; margin:0;">0</p>
+                        </div>
+                        <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1;">
+                            <h3 style="margin-top:0;">Ventas Hoy</h3>
+                            <p class="jpsm-stat-number" id="stat-today" style="font-size:32px; font-weight:bold; margin:0;">0</p>
+                        </div>
+                    </div>
 
-            <div class="jpsm-charts-row" style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px;">
-                <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1; min-width:300px;">
-                    <h3 style="margin-top:0;">Por Paquete</h3>
-                    <canvas id="chart-packages" style="max-height:300px;"></canvas>
-                </div>
-                <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1; min-width:300px;">
-                    <h3 style="margin-top:0;">Por Región</h3>
-                    <canvas id="chart-regions" style="max-height:300px;"></canvas>
-                </div>
-            </div>
+                    <div class="jpsm-charts-row" style="display:flex; gap:20px; flex-wrap:wrap; margin-bottom:20px;">
+                        <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1; min-width:300px;">
+                            <h3 style="margin-top:0;">Por Paquete</h3>
+                            <canvas id="chart-packages" style="max-height:300px;"></canvas>
+                        </div>
+                        <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc; flex:1; min-width:300px;">
+                            <h3 style="margin-top:0;">Por Región</h3>
+                            <canvas id="chart-regions" style="max-height:300px;"></canvas>
+                        </div>
+                    </div>
 
-            <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc;">
-                <h3 style="margin-top:0;">Últimos Movimientos</h3>
-                <table class="wp-list-table widefat fixed striped">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Email</th>
-                            <th>Paquete</th>
-                            <th>Región</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody id="dashboard-history-body"></tbody>
-                </table>
-            </div>
-        </div>
-        <?php
+                    <div class="jpsm-card" style="background:#fff; padding:20px; border:1px solid #ccc;">
+                        <h3 style="margin-top:0;">Últimos Movimientos</h3>
+                        <table class="wp-list-table widefat fixed striped">
+                            <thead>
+                                <tr>
+                                    <th>Fecha</th>
+                                    <th>Email</th>
+                                    <th>Paquete</th>
+                                    <th>Región</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dashboard-history-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php
     }
 
 
@@ -748,76 +752,76 @@ class JPSM_Admin
     public function display_registration_page()
     {
         ?>
-        <div class="wrap">
-            <h1>Registrar Nueva Venta</h1>
-            <div class="jpsm-card"
-                style="background: white; padding: 20px; max-width: 600px; border: 1px solid #ccc; border-radius: 5px;">
-                <form id="jpsm-registration-form">
-                    <table class="form-table">
-                        <tr valign="top">
-                            <th scope="row"><label for="client_email">Correo del Cliente</label></th>
-                            <td><input type="email" id="client_email" name="client_email" class="regular-text" required
-                                    placeholder="cliente@email.com" /></td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row"><label for="package_type">Paquete</label></th>
-                            <td>
-                                <select id="package_type" name="package_type" required>
-                                    <option value="">Selecciona un paquete...</option>
-                                    <option value="basic">Básico</option>
-                                    <option value="vip">VIP</option>
-                                    <option value="full">Full</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr valign="top">
-                            <th scope="row"><label for="region">Región</label></th>
-                            <td>
-                                <select id="region" name="region" required>
-                                    <option value="national">Nacional (MX)</option>
-                                    <option value="international">Internacional</option>
-                                </select>
-                            </td>
-                        </tr>
-                    </table>
-                    <p class="submit">
-                        <button type="submit" id="jpsm-submit-sale" class="button button-primary">Enviar y Registrar</button>
-                        <span class="spinner" id="jpsm-spinner" style="float:none;"></span>
-                    </p>
-                    <div id="jpsm-message"></div>
-                </form>
-            </div>
+                <div class="wrap">
+                    <h1>Registrar Nueva Venta</h1>
+                    <div class="jpsm-card"
+                        style="background: white; padding: 20px; max-width: 600px; border: 1px solid #ccc; border-radius: 5px;">
+                        <form id="jpsm-registration-form">
+                            <table class="form-table">
+                                <tr valign="top">
+                                    <th scope="row"><label for="client_email">Correo del Cliente</label></th>
+                                    <td><input type="email" id="client_email" name="client_email" class="regular-text" required
+                                            placeholder="cliente@email.com" /></td>
+                                </tr>
+                                <tr valign="top">
+                                    <th scope="row"><label for="package_type">Paquete</label></th>
+                                    <td>
+                                        <select id="package_type" name="package_type" required>
+                                            <option value="">Selecciona un paquete...</option>
+                                            <option value="basic">Básico</option>
+                                            <option value="vip">VIP</option>
+                                            <option value="full">Full</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                                <tr valign="top">
+                                    <th scope="row"><label for="region">Región</label></th>
+                                    <td>
+                                        <select id="region" name="region" required>
+                                            <option value="national">Nacional (MX)</option>
+                                            <option value="international">Internacional</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            </table>
+                            <p class="submit">
+                                <button type="submit" id="jpsm-submit-sale" class="button button-primary">Enviar y Registrar</button>
+                                <span class="spinner" id="jpsm-spinner" style="float:none;"></span>
+                            </p>
+                            <div id="jpsm-message"></div>
+                        </form>
+                    </div>
 
-            <hr>
+                    <hr>
 
-            <h2>Historial Reciente (Sesión actual)</h2>
+                    <h2>Historial Reciente (Sesión actual)</h2>
 
-            <div class="jpsm-actions-bar" style="height: 40px; margin-bottom: 8px;">
-                <button id='jpsm-bulk-delete'
-                    style='display:none; background: #f85149; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;'>
-                    Borrar Seleccionados (<span id='jpsm-selected-count'>0</span>)
-                </button>
-            </div>
+                    <div class="jpsm-actions-bar" style="height: 40px; margin-bottom: 8px;">
+                        <button id='jpsm-bulk-delete'
+                            style='display:none; background: #f85149; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 13px;'>
+                            Borrar Seleccionados (<span id='jpsm-selected-count'>0</span>)
+                        </button>
+                    </div>
 
-            <div id="jpsm-recent-activity">
-                <table class="wp-list-table widefat fixed striped">
-                    <thead>
-                        <tr>
-                            <th style='width:30px; padding-left:12px;'><input type='checkbox' id='jpsm-check-all'
-                                    style='width:20px; height:20px;'></th>
-                            <th>Email</th>
-                            <th>Paquete</th>
-                            <th>Hora</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="jpsm-activity-body">
-                        <!-- Filled by JS -->
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        <?php
+                    <div id="jpsm-recent-activity">
+                        <table class="wp-list-table widefat fixed striped">
+                            <thead>
+                                <tr>
+                                    <th style='width:30px; padding-left:12px;'><input type='checkbox' id='jpsm-check-all'
+                                            style='width:20px; height:20px;'></th>
+                                    <th>Email</th>
+                                    <th>Paquete</th>
+                                    <th>Hora</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="jpsm-activity-body">
+                                <!-- Filled by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <?php
     }
 
 
@@ -828,72 +832,72 @@ class JPSM_Admin
     {
         // Simple Settings Form
         ?>
-        <div class="wrap">
-            <h1>Configuración de JetPack Store Manager</h1>
-            <form method="post" action="options.php">
+                <div class="wrap">
+                    <h1>Configuración de JetPack Store Manager</h1>
+                    <form method="post" action="options.php">
+                        <?php
+                        echo '<h2>Plantillas de Correo</h2>';
+                        settings_fields('jpsm_settings_templates');
+                        do_settings_sections('jpsm_settings_templates');
+
+                        ?>
+                        <p>Usa <code>{nombre}</code> como placeholder si lo necesitas (implementación futura).</p>
+                        <table class="form-table">
+                            <tr valign="top">
+                                <th scope="row">Paquete Básico</th>
+                                <td>
+                                    <?php wp_editor(get_option('jpsm_email_template_basic'), 'jpsm_email_template_basic', array('textarea_rows' => 10)); ?>
+                                </td>
+                            </tr>
+                            <tr valign="top">
+                                <th scope="row">VIP + VIDEOS</th>
+                                <td>
+                                    <?php wp_editor(get_option('jpsm_email_template_vip_videos'), 'jpsm_email_template_vip_videos', array('textarea_rows' => 10)); ?>
+                                </td>
+                            </tr>
+                            <tr valign="top">
+                                <th scope="row">VIP + Pelis</th>
+                                <td>
+                                    <?php wp_editor(get_option('jpsm_email_template_vip_pelis'), 'jpsm_email_template_vip_pelis', array('textarea_rows' => 10)); ?>
+                                </td>
+                            </tr>
+                            <tr valign="top">
+                                <th scope="row">VIP + Básico</th>
+                                <td>
+                                    <?php wp_editor(get_option('jpsm_email_template_vip_basic'), 'jpsm_email_template_vip_basic', array('textarea_rows' => 10)); ?>
+                                </td>
+                            </tr>
+                            <tr valign="top">
+                                <th scope="row">Paquete Full</th>
+                                <td>
+                                    <?php wp_editor(get_option('jpsm_email_template_full'), 'jpsm_email_template_full', array('textarea_rows' => 10)); ?>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <hr>
+                        <h2>🔑 Acceso Móvil</h2>
+                        <p>Configura una clave secreta para acceder desde tu celular sin iniciar sesión en WordPress.</p>
+                        <table class="form-table">
+                            <tr valign="top">
+                                <th scope="row">Clave de Acceso</th>
+                                <td>
+                                    <input type="text" name="jpsm_access_key"
+                                        value="<?php echo esc_attr(get_option('jpsm_access_key')); ?>" class="regular-text"
+                                        placeholder="Ej: miClaveSecreta123" />
+                                    <p class="description">
+                                        Tu URL de acceso será:
+                                        <code><?php echo esc_url(home_url('/gestion/?key=')); ?><strong>[TU_CLAVE]</strong></code><br>
+                                        Guarda esta URL en los favoritos de tu celular.
+                                    </p>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <?php submit_button(); ?>
+                    </form>
+                </div>
                 <?php
-                echo '<h2>Plantillas de Correo</h2>';
-                settings_fields('jpsm_settings_templates');
-                do_settings_sections('jpsm_settings_templates');
-
-                ?>
-                <p>Usa <code>{nombre}</code> como placeholder si lo necesitas (implementación futura).</p>
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Paquete Básico</th>
-                        <td>
-                            <?php wp_editor(get_option('jpsm_email_template_basic'), 'jpsm_email_template_basic', array('textarea_rows' => 10)); ?>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">VIP + VIDEOS</th>
-                        <td>
-                            <?php wp_editor(get_option('jpsm_email_template_vip_videos'), 'jpsm_email_template_vip_videos', array('textarea_rows' => 10)); ?>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">VIP + Pelis</th>
-                        <td>
-                            <?php wp_editor(get_option('jpsm_email_template_vip_pelis'), 'jpsm_email_template_vip_pelis', array('textarea_rows' => 10)); ?>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">VIP + Básico</th>
-                        <td>
-                            <?php wp_editor(get_option('jpsm_email_template_vip_basic'), 'jpsm_email_template_vip_basic', array('textarea_rows' => 10)); ?>
-                        </td>
-                    </tr>
-                    <tr valign="top">
-                        <th scope="row">Paquete Full</th>
-                        <td>
-                            <?php wp_editor(get_option('jpsm_email_template_full'), 'jpsm_email_template_full', array('textarea_rows' => 10)); ?>
-                        </td>
-                    </tr>
-                </table>
-
-                <hr>
-                <h2>🔑 Acceso Móvil</h2>
-                <p>Configura una clave secreta para acceder desde tu celular sin iniciar sesión en WordPress.</p>
-                <table class="form-table">
-                    <tr valign="top">
-                        <th scope="row">Clave de Acceso</th>
-                        <td>
-                            <input type="text" name="jpsm_access_key"
-                                value="<?php echo esc_attr(get_option('jpsm_access_key')); ?>" class="regular-text"
-                                placeholder="Ej: miClaveSecreta123" />
-                            <p class="description">
-                                Tu URL de acceso será:
-                                <code><?php echo esc_url(home_url('/gestion/?key=')); ?><strong>[TU_CLAVE]</strong></code><br>
-                                Guarda esta URL en los favoritos de tu celular.
-                            </p>
-                        </td>
-                    </tr>
-                </table>
-
-                <?php submit_button(); ?>
-            </form>
-        </div>
-        <?php
     }
 
     public function enqueue_styles()
