@@ -1,0 +1,723 @@
+/* ================================================
+   JetPack Store - "Aurora" Mobile-First Theme 2025
+   Optimized for Thumb-Zone Navigation & Touch UX
+   ================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+:root {
+    /* --- Deep Space Palette --- */
+    --jpsm-bg-void: #010409;
+    --jpsm-bg-deep: #0d1117;
+    --jpsm-bg-elevated: #161b22;
+    --jpsm-bg-card: rgba(22, 27, 34, 0.85);
+    --jpsm-bg-glass: rgba(30, 35, 45, 0.6);
+
+    /* Borders & Dividers */
+    --jpsm-border-default: #30363d;
+    --jpsm-border-muted: #21262d;
+    --jpsm-border-glow: rgba(126, 231, 135, 0.3);
+
+    /* Text - Increased for readability */
+    --jpsm-text-primary: #f0f6fc;
+    --jpsm-text-secondary: #8b949e;
+    --jpsm-text-tertiary: #6e7681;
+
+    /* Accent Colors */
+    --jpsm-green: #3fb950;
+    --jpsm-green-light: #7ee787;
+    --jpsm-blue: #58a6ff;
+    --jpsm-purple: #a371f7;
+    --jpsm-pink: #db61a2;
+    --jpsm-danger: #f85149;
+
+    /* Gradients */
+    --jpsm-gradient-brand: linear-gradient(135deg, #7ee787 0%, #56d364 100%);
+    --jpsm-gradient-cosmic:
+        radial-gradient(ellipse 80% 50% at 50% -20%, rgba(120, 119, 198, 0.3), transparent),
+        radial-gradient(ellipse 60% 40% at 100% 0%, rgba(56, 189, 248, 0.15), transparent),
+        radial-gradient(ellipse 50% 30% at 0% 0%, rgba(168, 85, 247, 0.15), transparent);
+
+    /* Shadows - Enhanced for depth */
+    --jpsm-shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+    --jpsm-shadow-md: 0 8px 24px rgba(0, 0, 0, 0.4);
+    --jpsm-shadow-lg: 0 16px 48px rgba(0, 0, 0, 0.5);
+    --jpsm-shadow-glow-green: 0 0 40px rgba(63, 185, 80, 0.4);
+    --jpsm-shadow-glow-blue: 0 0 25px rgba(88, 166, 255, 0.25);
+
+    /* Mobile-First Spacing - Generous for touch */
+    --jpsm-space-xs: 8px;
+    --jpsm-space-sm: 12px;
+    --jpsm-space-md: 16px;
+    --jpsm-space-lg: 24px;
+    --jpsm-space-xl: 32px;
+
+    /* Radius - Softer, more modern */
+    --jpsm-radius-sm: 10px;
+    --jpsm-radius-md: 16px;
+    --jpsm-radius-lg: 24px;
+    --jpsm-radius-full: 100px;
+
+    /* Typography - Larger for mobile */
+    --jpsm-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --jpsm-font-size-sm: 14px;
+    --jpsm-font-size-md: 16px;
+    --jpsm-font-size-lg: 18px;
+    --jpsm-font-size-xl: 24px;
+    --jpsm-font-size-xxl: 32px;
+
+    /* Touch Targets - 48px minimum */
+    --jpsm-touch-min: 48px;
+
+    /* Safe Areas for notch devices */
+    --safe-area-top: env(safe-area-inset-top, 0px);
+    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* --- Base Container --- */
+#jpsm-mobile-app {
+    font-family: var(--jpsm-font);
+    background-color: var(--jpsm-bg-void);
+    background-image: var(--jpsm-gradient-cosmic);
+    background-attachment: fixed;
+    color: var(--jpsm-text-primary);
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* Dynamic viewport for mobile */
+    padding: var(--jpsm-space-lg);
+    padding-top: calc(var(--jpsm-space-lg) + var(--safe-area-top));
+    padding-bottom: calc(100px + var(--safe-area-bottom));
+    /* Space for bottom nav */
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+}
+
+#jpsm-mobile-app *,
+#jpsm-mobile-app *::before,
+#jpsm-mobile-app *::after {
+    box-sizing: border-box;
+}
+
+/* --- Header - Compact for more content space --- */
+.jpsm-header {
+    text-align: center;
+    margin-bottom: var(--jpsm-space-lg);
+    padding-top: var(--jpsm-space-sm);
+}
+
+.jpsm-header h1 {
+    font-size: var(--jpsm-font-size-xl);
+    font-weight: 800;
+    margin: 0 0 4px;
+    letter-spacing: -0.5px;
+    color: var(--jpsm-text-primary);
+    background: linear-gradient(135deg, var(--jpsm-text-primary), var(--jpsm-green-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.jpsm-header p {
+    color: var(--jpsm-text-secondary);
+    font-size: var(--jpsm-font-size-sm);
+    font-weight: 400;
+    margin: 0;
+}
+
+/* --- Navigation Tabs - BOTTOM POSITIONED (Thumb Zone) --- */
+.jpsm-nav-tabs {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    gap: 0;
+    background: var(--jpsm-bg-glass);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: var(--jpsm-space-sm);
+    padding-bottom: calc(var(--jpsm-space-sm) + var(--safe-area-bottom));
+    border-top: 1px solid var(--jpsm-border-muted);
+    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+    z-index: 1000;
+}
+
+.jpsm-tab-link {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--jpsm-text-secondary);
+    padding: var(--jpsm-space-md) var(--jpsm-space-sm);
+    min-height: var(--jpsm-touch-min);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: var(--jpsm-radius-md);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.jpsm-tab-link:hover {
+    color: var(--jpsm-text-primary);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.jpsm-tab-link.active {
+    background: rgba(126, 231, 135, 0.12);
+    color: var(--jpsm-green-light);
+    transform: scale(1.02);
+}
+
+/* Active indicator dot */
+.jpsm-tab-link.active::after {
+    content: '';
+    position: absolute;
+    top: 6px;
+    width: 6px;
+    height: 6px;
+    background: var(--jpsm-green);
+    border-radius: 50%;
+    box-shadow: 0 0 8px var(--jpsm-green);
+}
+
+/* --- Glass Cards - Enhanced Glassmorphism --- */
+.jpsm-mobile-card {
+    background: var(--jpsm-bg-glass);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--jpsm-radius-lg);
+    padding: var(--jpsm-space-lg);
+    margin-bottom: var(--jpsm-space-lg);
+    box-shadow:
+        var(--jpsm-shadow-md),
+        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+/* Subtle glow on top edge */
+.jpsm-mobile-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(126, 231, 135, 0.3) 50%,
+            transparent);
+}
+
+.jpsm-mobile-card h3 {
+    margin: 0 0 var(--jpsm-space-lg);
+    font-size: var(--jpsm-font-size-lg);
+    font-weight: 700;
+    color: var(--jpsm-text-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--jpsm-space-sm);
+}
+
+/* --- Form Elements - Touch Optimized --- */
+.jpsm-mobile-card label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: var(--jpsm-space-sm);
+    color: var(--jpsm-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.jpsm-input-lg {
+    width: 100%;
+    min-height: var(--jpsm-touch-min);
+    background: var(--jpsm-bg-deep);
+    border: 1.5px solid var(--jpsm-border-default);
+    border-radius: var(--jpsm-radius-md);
+    padding: var(--jpsm-space-md) var(--jpsm-space-lg);
+    color: #ffffff;
+    font-size: var(--jpsm-font-size-md);
+    font-family: var(--jpsm-font);
+    margin-bottom: var(--jpsm-space-md);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.1s ease;
+    appearance: none;
+    -webkit-appearance: none;
+    -webkit-text-fill-color: #ffffff;
+    opacity: 1;
+}
+
+.jpsm-input-lg::placeholder {
+    color: var(--jpsm-text-tertiary);
+}
+
+.jpsm-input-lg:focus {
+    outline: none;
+    border-color: var(--jpsm-green);
+    box-shadow: 0 0 0 4px rgba(63, 185, 80, 0.15), var(--jpsm-shadow-glow-green);
+    transform: scale(1.01);
+}
+
+/* Select dropdown styling */
+select.jpsm-input-lg {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%238b949e' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10l-5 5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 48px;
+}
+
+/* --- Primary Action Button - Large Touch Target --- */
+.jpsm-btn-block {
+    width: 100%;
+    min-height: 56px;
+    background: var(--jpsm-gradient-brand);
+    color: #0d1117;
+    font-size: var(--jpsm-font-size-md);
+    font-weight: 700;
+    font-family: var(--jpsm-font);
+    border: none;
+    border-radius: var(--jpsm-radius-md);
+    padding: var(--jpsm-space-md) var(--jpsm-space-lg);
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.25s ease;
+    position: relative;
+    overflow: hidden;
+    margin-top: var(--jpsm-space-sm);
+}
+
+/* Shimmer effect */
+.jpsm-btn-block::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    pointer-events: none;
+    transition: left 0.5s ease;
+}
+
+.jpsm-btn-block:hover::before {
+    left: 100%;
+}
+
+.jpsm-btn-block:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--jpsm-shadow-glow-green);
+}
+
+.jpsm-btn-block:active {
+    transform: scale(0.98);
+    box-shadow: none;
+}
+
+/* --- Stats Grid - Large Numbers --- */
+.jpsm-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--jpsm-space-md);
+    margin-bottom: var(--jpsm-space-lg);
+}
+
+.jpsm-stat-box {
+    background: linear-gradient(145deg, var(--jpsm-bg-elevated), var(--jpsm-bg-deep));
+    border: 1px solid var(--jpsm-border-default);
+    border-radius: var(--jpsm-radius-lg);
+    padding: var(--jpsm-space-lg);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.jpsm-stat-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--jpsm-green), transparent);
+    opacity: 0.5;
+}
+
+.jpsm-stat-box span {
+    display: block;
+    color: var(--jpsm-text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: var(--jpsm-space-sm);
+}
+
+.jpsm-stat-box h2 {
+    font-size: 42px;
+    font-weight: 800;
+    margin: 0;
+    color: var(--jpsm-text-primary);
+    line-height: 1;
+    background: linear-gradient(180deg, var(--jpsm-text-primary), var(--jpsm-text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* --- Data Table - Touch-Friendly Rows --- */
+.jpsm-history-list {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin: 0 -var(--jpsm-space-lg);
+    padding: 0 var(--jpsm-space-lg);
+}
+
+.jpsm-mobile-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 320px;
+}
+
+.jpsm-mobile-table th {
+    text-align: left;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--jpsm-text-tertiary);
+    padding: var(--jpsm-space-sm) var(--jpsm-space-xs);
+    border-bottom: 1px solid var(--jpsm-border-muted);
+    white-space: nowrap;
+}
+
+.jpsm-mobile-table td {
+    padding: var(--jpsm-space-md) var(--jpsm-space-xs);
+    font-size: var(--jpsm-font-size-sm);
+    color: var(--jpsm-text-primary);
+    border-bottom: 1px solid var(--jpsm-border-muted);
+    vertical-align: middle;
+}
+
+.jpsm-mobile-table tr {
+    transition: background 0.15s ease;
+}
+
+.jpsm-mobile-table tr:last-child td {
+    border-bottom: none;
+}
+
+.jpsm-mobile-table tr:active td {
+    background: rgba(126, 231, 135, 0.08);
+}
+
+/* --- Feedback Messages - Prominent --- */
+#jpsm-message {
+    padding: var(--jpsm-space-md) var(--jpsm-space-lg);
+    border-radius: var(--jpsm-radius-md);
+    margin-top: var(--jpsm-space-md);
+    font-size: var(--jpsm-font-size-md);
+    font-weight: 600;
+    text-align: center;
+    display: none;
+    animation: popIn 0.3s ease;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0.9);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+#jpsm-message.success {
+    display: block;
+    background: rgba(46, 160, 67, 0.15);
+    border: 1.5px solid rgba(63, 185, 80, 0.5);
+    color: var(--jpsm-green-light);
+}
+
+#jpsm-message.error {
+    display: block;
+    background: rgba(248, 81, 73, 0.15);
+    border: 1.5px solid rgba(248, 81, 73, 0.5);
+    color: #f85149;
+}
+
+/* --- Tab Content Animation --- */
+.jpsm-tab-content {
+    animation: fadeSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeSlide {
+    from {
+        opacity: 0;
+        transform: translateY(16px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Segmented Control / Radio Group (VIP Options) --- */
+.jpsm-radio-group {
+    display: flex;
+    gap: var(--jpsm-space-sm);
+    width: 100%;
+}
+
+.jpsm-radio-option {
+    flex: 1;
+    position: relative;
+    cursor: pointer;
+}
+
+.jpsm-radio-option input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.jpsm-radio-option span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 52px;
+    text-align: center;
+    padding: var(--jpsm-space-md) var(--jpsm-space-sm);
+    background: var(--jpsm-bg-deep);
+    border: 1.5px solid var(--jpsm-border-default);
+    border-radius: var(--jpsm-radius-md);
+    color: var(--jpsm-text-secondary);
+    font-weight: 600;
+    font-size: 13px;
+    transition: all 0.25s ease;
+}
+
+.jpsm-radio-option input:checked+span {
+    background: linear-gradient(135deg, #7c3aed, #a855f7);
+    border-color: #a855f7;
+    color: #ffffff;
+    box-shadow: 0 6px 20px -4px rgba(124, 58, 237, 0.5);
+    transform: scale(1.02);
+}
+
+.jpsm-radio-option:active span {
+    transform: scale(0.97);
+}
+
+/* --- Input Group (Email + Paste Button) --- */
+.jpsm-input-group {
+    position: relative;
+}
+
+.jpsm-input-group .jpsm-input-lg {
+    padding-right: 90px;
+}
+
+#jpsm-paste-email {
+    position: absolute;
+    right: 6px;
+    top: 6px;
+    bottom: 22px;
+    /* Account for margin-bottom on input */
+    min-height: 36px;
+    background: var(--jpsm-blue);
+    color: white;
+    border: none;
+    border-radius: var(--jpsm-radius-sm);
+    padding: 0 var(--jpsm-space-md);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+}
+
+#jpsm-paste-email:active {
+    transform: scale(0.95);
+    background: #4093e6;
+}
+
+/* --- VIP Subtype Container --- */
+#vip-subtype-container {
+    margin-top: var(--jpsm-space-md);
+    padding: var(--jpsm-space-md);
+    background: rgba(124, 58, 237, 0.08);
+    border: 1px solid rgba(124, 58, 237, 0.3);
+    border-radius: var(--jpsm-radius-md);
+    animation: fadeSlide 0.3s ease;
+}
+
+#vip-subtype-container label {
+    color: #a855f7;
+}
+
+/* --- Responsive - Even Smaller Devices --- */
+@media (max-width: 380px) {
+    #jpsm-mobile-app {
+        padding: var(--jpsm-space-md);
+        padding-bottom: calc(90px + var(--safe-area-bottom));
+    }
+
+    .jpsm-header h1 {
+        font-size: 22px;
+    }
+
+    .jpsm-tab-link {
+        font-size: 11px;
+        padding: var(--jpsm-space-sm) 4px;
+    }
+
+    .jpsm-stat-box h2 {
+        font-size: 32px;
+    }
+
+    .jpsm-mobile-card {
+        padding: var(--jpsm-space-md);
+    }
+
+    .jpsm-radio-option span {
+        font-size: 11px;
+        padding: var(--jpsm-space-sm);
+        min-height: 46px;
+    }
+}
+
+/* --- Landscape Mode Adjustments --- */
+@media (max-height: 500px) and (orientation: landscape) {
+    .jpsm-header {
+        margin-bottom: var(--jpsm-space-md);
+    }
+
+    .jpsm-header h1 {
+        font-size: 20px;
+    }
+
+    .jpsm-mobile-card {
+        padding: var(--jpsm-space-md);
+        margin-bottom: var(--jpsm-space-md);
+    }
+
+    .jpsm-nav-tabs {
+        padding: var(--jpsm-space-xs);
+    }
+
+    .jpsm-tab-link {
+        min-height: 40px;
+        padding: var(--jpsm-space-xs);
+    }
+}
+
+/* --- Reduce Motion for Accessibility --- */
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* --- High Contrast Mode --- */
+@media (prefers-contrast: high) {
+    .jpsm-mobile-card {
+        border-width: 2px;
+    }
+
+    .jpsm-input-lg {
+        border-width: 2px;
+    }
+
+    .jpsm-btn-block {
+        border: 2px solid var(--jpsm-green);
+    }
+}
+
+/* --- Bulk Delete Styles --- */
+input[type="checkbox"].jpsm-log-check,
+#jpsm-check-all {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 24px;
+    height: 24px;
+    background-color: var(--jpsm-bg-deep);
+    border: 2px solid var(--jpsm-border-default);
+    border-radius: 6px;
+    cursor: pointer;
+    vertical-align: middle;
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+input[type="checkbox"].jpsm-log-check:checked,
+#jpsm-check-all:checked {
+    background-color: var(--jpsm-danger);
+    border-color: var(--jpsm-danger);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' width='18px' height='18px'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z'/%3E%3C/svg%3E");
+    background-position: center;
+    background-repeat: no-repeat;
+    box-shadow: 0 0 10px rgba(248, 81, 73, 0.4);
+}
+
+#jpsm-bulk-delete {
+    background: var(--jpsm-danger);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: var(--jpsm-radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 14px;
+    box-shadow: 0 4px 12px rgba(248, 81, 73, 0.3);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+#jpsm-bulk-delete:active {
+    transform: scale(0.96);
+}
+
+/* Animation for the button appearing */
+@keyframes popIn {
+    0% {
+        transform: scale(0.5);
+        opacity: 0;
+    }
+
+    80% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+/* Adjust table first column width */
+.jpsm-mobile-table th:first-child,
+.jpsm-mobile-table td:first-child {
+    width: 40px;
+    text-align: center;
+    padding-left: 0;
+}
