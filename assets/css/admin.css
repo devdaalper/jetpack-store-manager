@@ -131,10 +131,19 @@ body.jetpack-store_page_jpsm-settings {
 /* --- Dashboard Layout (Grid System) --- */
 .jpsm-dashboard-container {
     display: flex;
-    /* Mobile default: Stack vertical */
     flex-direction: column;
     min-height: 100vh;
-    gap: var(--jpsm-space-md);
+    gap: 0;
+    background-color: var(--jpsm-bg-void);
+}
+
+/* Main Content Area */
+.jpsm-main-content {
+    flex: 1;
+    background-color: var(--jpsm-bg-void);
+    padding: var(--jpsm-space-2);
+    padding-bottom: 100px;
+    /* Space for floating nav */
 }
 
 /* --- Mobile Nav (Bottom Bar) --- */
@@ -154,7 +163,7 @@ body.jetpack-store_page_jpsm-settings {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--jpsm-space-2);
-    margin: 0 var(--jpsm-space-2) var(--jpsm-space-3);
+    margin: 0 0 var(--jpsm-space-3);
 }
 
 /* Tablet: 2 columns */
@@ -893,6 +902,10 @@ select.jpsm-input-lg {
 /* --- Tab Content Animation --- */
 .jpsm-tab-content {
     animation: fadeSlide 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    background-color: var(--jpsm-bg-void);
+    padding: var(--jpsm-space-2);
+    padding-bottom: 100px;
+    /* Space for floating nav */
 }
 
 @keyframes fadeSlide {
