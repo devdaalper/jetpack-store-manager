@@ -742,21 +742,20 @@ class JPSM_Admin
 
             <!-- TAB 3: STATS -->
             <div id="jpsm-tab-stats" class="jpsm-tab-content">
-                <div class="jpsm-stats-grid">
-                    <div class="jpsm-stat-box">
-                        <span>Ventas Totales</span>
-                        <h2 id="stat-total"><?php echo $total_sales; ?></h2>
+                <div class="jpsm-kpi-grid" style="margin-bottom: var(--jpsm-space-md);">
+                    <div class="jpsm-kpi-card">
+                        <span class="jpsm-kpi-label">Ventas Totales (Histórico)</span>
+                        <div class="jpsm-kpi-value" id="stat-total"><?php echo $total_sales; ?></div>
                     </div>
-                </div>
+                    
+                    <div class="jpsm-kpi-card">
+                        <span class="jpsm-kpi-label">Ticket Promedio (🇲🇽)</span>
+                        <div class="jpsm-kpi-value positive">$<?php echo number_format($avg_ticket_mxn, 0); ?></div>
+                    </div>
 
-                <div class="jpsm-stats-grid" style="grid-template-columns: 1fr 1fr; margin-top:0;">
-                    <div class="jpsm-stat-box">
-                        <span style="font-size:10px;">Ticket (🇲🇽)</span>
-                        <h2 style="font-size:16px;">$<?php echo number_format($avg_ticket_mxn, 0); ?></h2>
-                    </div>
-                    <div class="jpsm-stat-box">
-                        <span style="font-size:10px;">Ticket (🌍)</span>
-                        <h2 style="font-size:16px;">$<?php echo number_format($avg_ticket_usd, 0); ?></h2>
+                    <div class="jpsm-kpi-card">
+                        <span class="jpsm-kpi-label">Ticket Promedio (🌍)</span>
+                        <div class="jpsm-kpi-value accent">$<?php echo number_format($avg_ticket_usd, 0); ?></div>
                     </div>
                 </div>
 
@@ -847,7 +846,7 @@ class JPSM_Admin
                                         data: [<?php echo $packages['basic']; ?>, <?php echo $packages['vip']; ?>,
                                             <?php echo $packages['full']; ?>
                                         ],
-                                        backgroundColor: ['#3fb950', '#a371f7', '#db61a2'],
+                                        backgroundColor: ['#00ff9d', '#bd00ff', '#00e0ff'],
                                         borderWidth: 0
                                     }]
                                 },
@@ -857,7 +856,9 @@ class JPSM_Admin
                                         legend: {
                                             position: 'right',
                                             labels: {
-                                                boxWidth: 12
+                                                boxWidth: 12,
+                                                color: '#d1d1e0',
+                                                font: { size: 11 }
                                             }
                                         }
                                     }
@@ -877,28 +878,25 @@ class JPSM_Admin
                                         data: [<?php echo $regions['national']; ?>,
                                             <?php echo $regions['international']; ?>
                                         ],
-                                        backgroundColor: ['#58a6ff', '#f0883e'],
+                                        backgroundColor: ['#4ade80', '#2563eb'],
                                         borderRadius: 4
                                     }]
                                 },
                                 options: {
-                                    maintainAspectRatio: false,
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            grid: {
-                                                color: '#21262d'
-                                            }
-                                        },
-                                        x: {
-                                            grid: {
-                                                display: false
-                                            }
-                                        }
-                                    },
                                     plugins: {
                                         legend: {
                                             display: false
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            grid: { color: 'rgba(255,255,255,0.05)' },
+                                            ticks: { color: '#a0a0c0', font: { size: 10 } }
+                                        },
+                                        x: {
+                                            grid: { display: false },
+                                            ticks: { color: '#a0a0c0', font: { size: 10 } }
                                         }
                                     }
                                 }
@@ -914,7 +912,7 @@ class JPSM_Admin
                                     labels: ['Nuevos', 'Recurrentes'],
                                     datasets: [{
                                         data: [<?php echo $new_clients; ?>, <?php echo $recurring_clients; ?>],
-                                        backgroundColor: ['#2ea043', '#f85149'],
+                                        backgroundColor: ['#00ff9d', '#2563eb'],
                                         borderWidth: 0
                                     }]
                                 },
@@ -924,7 +922,9 @@ class JPSM_Admin
                                         legend: {
                                             position: 'right',
                                             labels: {
-                                                boxWidth: 12
+                                                boxWidth: 12,
+                                                color: '#d1d1e0',
+                                                font: { size: 11 }
                                             }
                                         }
                                     }
@@ -950,12 +950,12 @@ class JPSM_Admin
                                             echo implode(',', $points);
                                             ?>
                                         ],
-                                        borderColor: '#f0883e',
-                                        backgroundColor: 'rgba(240, 136, 62, 0.1)',
+                                        borderColor: '#00e0ff',
+                                        backgroundColor: 'rgba(0, 224, 255, 0.1)',
                                         fill: true,
                                         tension: 0.4,
-                                        pointRadius: 2,
-                                        pointBackgroundColor: '#f0883e'
+                                        pointRadius: 4,
+                                        pointBackgroundColor: '#00e0ff'
                                     }]
                                 },
                                 options: {
@@ -963,12 +963,12 @@ class JPSM_Admin
                                     scales: {
                                         y: {
                                             beginAtZero: true,
-                                            display: false
+                                            grid: { color: 'rgba(255,255,255,0.05)' },
+                                            ticks: { color: '#a0a0c0', font: { size: 10 } }
                                         },
                                         x: {
-                                            grid: {
-                                                display: false
-                                            }
+                                            grid: { display: false },
+                                            ticks: { color: '#a0a0c0', font: { size: 10 } }
                                         }
                                     },
                                     plugins: {
