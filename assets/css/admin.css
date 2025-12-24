@@ -42,55 +42,88 @@ body.jetpack-store_page_jpsm-settings {
 }
 
 :root {
-    /* --- Deep Space Palette (Power BI Inspired) --- */
-    --jpsm-bg-void: #0a0a1a;
-    /* Deepest Navy */
-    --jpsm-bg-deep: #12122b;
-    /* Sidebar BG */
-    --jpsm-bg-card: #1c1c38;
-    /* Solid Card Fallback */
-    --jpsm-bg-card-glass: rgba(28, 28, 56, 0.95);
-    /* High-opacity Glass */
-    --jpsm-bg-hover: rgba(255, 255, 255, 0.1);
+    /* === Power BI Design System === */
 
-    /* Text (High Contrast) */
+    /* --- Deep Space Palette --- */
+    --jpsm-bg-void: #0a0a1a;
+    --jpsm-bg-deep: #12122b;
+    --jpsm-bg-card: #1c1c38;
+    --jpsm-bg-card-glass: rgba(28, 28, 56, 0.95);
+    --jpsm-bg-hover: rgba(255, 255, 255, 0.08);
+    --jpsm-bg-active: rgba(255, 255, 255, 0.12);
+
+    /* --- Text (WCAG AA Compliant) --- */
     --jpsm-text-primary: #ffffff;
     --jpsm-text-secondary: #d1d1e0;
-    /* Brighter gray for accessibility */
     --jpsm-text-tertiary: #a0a0c0;
-    /* Visible tertiary text */
+    --jpsm-text-muted: #6b6b8a;
 
-    /* Borders & Dividers */
+    /* --- Borders & Dividers --- */
     --jpsm-border-default: #2d2d4a;
     --jpsm-border-muted: #1e1e35;
+    --jpsm-border-focus: #00e0ff;
 
-    /* Power BI Accents */
+    /* --- Power BI Accents --- */
     --jpsm-accent-cyan: #00e0ff;
     --jpsm-accent-purple: #bd00ff;
+    --jpsm-accent-gold: #fbbf24;
     --jpsm-status-success: #4ade80;
     --jpsm-status-error: #f43f5e;
+    --jpsm-gradient-brand: linear-gradient(135deg, #00e0ff, #bd00ff);
 
-    /* Spacing & Sizes */
+    /* --- 8px Spacing Scale --- */
+    --jpsm-space-1: 8px;
+    --jpsm-space-2: 16px;
+    --jpsm-space-3: 24px;
+    --jpsm-space-4: 32px;
+    --jpsm-space-5: 48px;
+    --jpsm-space-6: 64px;
+
+    /* Legacy aliases (for compatibility) */
+    --jpsm-space-xs: var(--jpsm-space-1);
+    --jpsm-space-sm: var(--jpsm-space-1);
+    --jpsm-space-md: var(--jpsm-space-2);
+    --jpsm-space-lg: var(--jpsm-space-3);
+    --jpsm-space-xl: var(--jpsm-space-4);
     --sidebar-width: 260px;
-    --jpsm-space-xs: 8px;
-    --jpsm-space-sm: 12px;
-    --jpsm-space-md: 16px;
-    --jpsm-space-lg: 24px;
-    --jpsm-space-xl: 32px;
-    --jpsm-radius-sm: 8px;
+
+    /* --- Border Radius --- */
+    --jpsm-radius-sm: 6px;
     --jpsm-radius-md: 12px;
-    --jpsm-radius-lg: 20px;
+    --jpsm-radius-lg: 16px;
+    --jpsm-radius-full: 9999px;
 
-    /* Typography */
+    /* --- Fluid Typography (clamp) --- */
     --jpsm-font: 'Inter', system-ui, -apple-system, sans-serif;
-    --jpsm-font-size-sm: 13px;
-    --jpsm-font-size-md: 15px;
-    --jpsm-font-size-lg: 18px;
-    --jpsm-font-size-xl: 24px;
-    --jpsm-font-size-xxl: 36px;
+    --jpsm-font-size-xs: clamp(0.6875rem, 0.65rem + 0.2vw, 0.75rem);
+    /* 11-12px */
+    --jpsm-font-size-sm: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+    /* 12-14px */
+    --jpsm-font-size-md: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+    /* 14-16px */
+    --jpsm-font-size-lg: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
+    /* 16-20px */
+    --jpsm-font-size-xl: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    /* 20-28px */
+    --jpsm-font-size-xxl: clamp(1.75rem, 1.5rem + 1.5vw, 2.5rem);
+    /* 28-40px */
+    --jpsm-font-size-hero: clamp(2rem, 1.5rem + 2.5vw, 3.5rem);
+    /* 32-56px */
 
-    /* Safe Area & Touch */
-    --jpsm-touch-min: 48px;
+    /* --- Shadows (Elevation) --- */
+    --jpsm-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --jpsm-shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --jpsm-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+    --jpsm-shadow-glow: 0 0 20px rgba(0, 224, 255, 0.15);
+    --jpsm-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.3), 0 0 0 1px var(--jpsm-border-default);
+
+    /* --- Transitions --- */
+    --jpsm-transition-fast: 150ms ease;
+    --jpsm-transition-medium: 250ms ease;
+    --jpsm-transition-slow: 350ms ease;
+
+    /* --- Safe Area & Touch --- */
+    --jpsm-touch-min: 44px;
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -120,15 +153,22 @@ body.jetpack-store_page_jpsm-settings {
 .jpsm-kpi-grid {
     display: grid;
     grid-template-columns: 1fr;
-    /* Stack on mobile */
-    gap: var(--jpsm-space-md);
-    margin: 0 16px var(--jpsm-space-lg);
-    /* Add horizontal margin for mobile preview */
+    gap: var(--jpsm-space-2);
+    margin: 0 var(--jpsm-space-2) var(--jpsm-space-3);
 }
 
+/* Tablet: 2 columns */
 @media (min-width: 480px) {
     .jpsm-kpi-grid {
         grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Tablet Large: 3 columns */
+@media (min-width: 768px) {
+    .jpsm-kpi-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--jpsm-space-3);
     }
 }
 
@@ -139,13 +179,15 @@ body.jetpack-store_page_jpsm-settings {
     border: 1px solid var(--jpsm-border-default);
     border-radius: var(--jpsm-radius-md);
     background-color: var(--jpsm-bg-card);
-    /* Fallback */
-    padding: var(--jpsm-space-md);
+    padding: var(--jpsm-space-2) var(--jpsm-space-3);
+    min-height: 100px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
     position: relative;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: var(--jpsm-transition-medium);
+    transition-property: transform, box-shadow, border-color;
 }
 
 .jpsm-kpi-card::before {
@@ -154,31 +196,52 @@ body.jetpack-store_page_jpsm-settings {
     top: 0;
     left: 0;
     width: 4px;
-    /* Default sidebar accent */
     height: 100%;
-    background: var(--jpsm-text-tertiary);
-    opacity: 0.5;
+    background: var(--jpsm-accent-cyan);
+    opacity: 0.6;
+    transition: opacity var(--jpsm-transition-fast);
 }
 
 .jpsm-kpi-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--jpsm-shadow-card);
-    border-color: var(--jpsm-text-secondary);
+    transform: translateY(-3px);
+    box-shadow: var(--jpsm-shadow-lg), var(--jpsm-shadow-glow);
+    border-color: var(--jpsm-border-focus);
+}
+
+.jpsm-kpi-card:hover::before {
+    opacity: 1;
+}
+
+.jpsm-kpi-card:focus-within {
+    outline: 2px solid var(--jpsm-border-focus);
+    outline-offset: 2px;
+}
+
+/* Primary KPI (first card) */
+.jpsm-kpi-card:first-child {
+    background: linear-gradient(135deg, var(--jpsm-bg-card) 0%, rgba(0, 224, 255, 0.1) 100%);
+}
+
+.jpsm-kpi-card:first-child::before {
+    width: 5px;
+    background: var(--jpsm-gradient-brand);
+    opacity: 1;
 }
 
 .jpsm-kpi-label {
-    font-size: 11px;
+    font-size: var(--jpsm-font-size-xs);
     font-weight: 600;
     color: var(--jpsm-text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: var(--jpsm-space-xs);
+    letter-spacing: 0.08em;
+    margin-bottom: var(--jpsm-space-1);
 }
 
 .jpsm-kpi-value {
-    font-size: 28px;
+    font-size: var(--jpsm-font-size-xxl);
     font-weight: 700;
     color: var(--jpsm-text-primary);
+    line-height: 1.1;
 }
 
 .jpsm-kpi-value.accent {
@@ -191,15 +254,15 @@ body.jetpack-store_page_jpsm-settings {
 
 .jpsm-kpi-trend {
     position: absolute;
-    bottom: var(--jpsm-space-sm);
-    right: var(--jpsm-space-sm);
-    font-size: 11px;
-    font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 4px;
+    bottom: var(--jpsm-space-1);
+    right: var(--jpsm-space-1);
+    font-size: var(--jpsm-font-size-xs);
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: var(--jpsm-radius-full);
     background: rgba(74, 222, 128, 0.15);
     color: var(--jpsm-status-success);
-    border: 1px solid rgba(74, 222, 128, 0.2);
+    border: 1px solid rgba(74, 222, 128, 0.25);
 }
 
 /* --- Desktop Layout (> 1024px) --- */
@@ -215,17 +278,16 @@ body.jetpack-store_page_jpsm-settings {
 
     /* Hide Mobile Nav */
     .jpsm-nav-tabs,
-    .jpsm-header p.jpsm-date-display
+    .jpsm-header p.jpsm-date-display {
+        display: none !important;
+    }
 
     /* KPI Grid Expand */
     .jpsm-kpi-grid {
         grid-template-columns: repeat(4, 1fr);
-        margin: 0 0 var(--jpsm-space-lg);
+        margin: 0 0 var(--jpsm-space-3);
     }
 
-        {
-        display: none !important;
-    }
 
     /* Show Sidebar */
     .jpsm-sidebar {
@@ -400,84 +462,61 @@ body.jetpack-store_page_jpsm-settings {
     background: transparent;
     border: none;
     color: var(--jpsm-text-tertiary);
-    padding: 10px 16px;
+    padding: var(--jpsm-space-1) var(--jpsm-space-2);
     min-height: var(--jpsm-touch-min);
-    font-size: 12px;
+    font-size: var(--jpsm-font-size-sm);
     font-weight: 600;
     cursor: pointer;
-    border-radius: 30px;
-    transition: all 0.2s ease;
+    border-radius: var(--jpsm-radius-full);
+    transition: var(--jpsm-transition-fast);
+    transition-property: color, background, transform;
     text-align: center;
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
 }
 
 .jpsm-tab-link:hover {
     color: var(--jpsm-text-primary);
-    background: rgba(255, 255, 255, 0.06);
+    background: var(--jpsm-bg-hover);
+}
+
+.jpsm-tab-link:focus-visible {
+    outline: 2px solid var(--jpsm-border-focus);
+    outline-offset: 2px;
 }
 
 .jpsm-tab-link.active {
-    background: rgba(126, 231, 135, 0.12);
-    color: var(--jpsm-green-light);
-    transform: scale(1.02);
-}
-
-/* Active indicator dot */
-.jpsm-tab-link.active::after {
-    content: '';
-    position: absolute;
-    top: 6px;
-    width: 6px;
-    height: 6px;
-    background: var(--jpsm-green);
-    border-radius: 50%;
-    box-shadow: 0 0 8px var(--jpsm-green);
+    background: var(--jpsm-accent-cyan);
+    color: var(--jpsm-bg-void);
+    box-shadow: var(--jpsm-shadow-md), 0 0 12px rgba(0, 224, 255, 0.3);
 }
 
 /* --- Glass Cards - Enhanced Glassmorphism --- */
 .jpsm-mobile-card {
-    background: var(--jpsm-bg-glass);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--jpsm-bg-card-glass);
+    border: 1px solid var(--jpsm-border-default);
     border-radius: var(--jpsm-radius-lg);
-    padding: var(--jpsm-space-lg);
-    margin-bottom: var(--jpsm-space-lg);
-    box-shadow:
-        var(--jpsm-shadow-md),
-        inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    padding: var(--jpsm-space-3);
+    margin-bottom: var(--jpsm-space-2);
+    box-shadow: var(--jpsm-shadow-md);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
     position: relative;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: var(--jpsm-transition-medium);
+    transition-property: transform, box-shadow;
 }
 
-/* Subtle glow on top edge */
-.jpsm-mobile-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 10%;
-    right: 10%;
-    height: 1px;
-    background: linear-gradient(90deg,
-            transparent,
-            rgba(126, 231, 135, 0.3) 50%,
-            transparent);
+.jpsm-mobile-card:hover {
+    box-shadow: var(--jpsm-shadow-lg);
 }
 
 .jpsm-mobile-card h3 {
-    margin: 0 0 var(--jpsm-space-lg);
+    margin: 0 0 var(--jpsm-space-2);
     font-size: var(--jpsm-font-size-lg);
     font-weight: 700;
     color: var(--jpsm-text-primary);
     display: flex;
     align-items: center;
-    gap: var(--jpsm-space-sm);
+    gap: var(--jpsm-space-1);
 }
 
 /* --- Form Elements - Touch Optimized --- */
