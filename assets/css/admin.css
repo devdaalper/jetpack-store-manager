@@ -42,47 +42,33 @@ body.jetpack-store_page_jpsm-settings {
 }
 
 :root {
-    /* --- Deep Space Palette --- */
-    /* --- Power BI "Contoso" Palette --- */
-    --jpsm-bg-void: #101020;
+    /* --- Deep Space Palette (Power BI Inspired) --- */
+    --jpsm-bg-void: #0a0a1a;
     /* Deepest Navy */
-    --jpsm-bg-deep: #1a1a2e;
-    /* Sidebar/Panel BG */
-    --jpsm-bg-card: rgba(30, 30, 50, 0.7);
-    /* Glass Card */
-    --jpsm-bg-glass: rgba(26, 26, 46, 0.85);
-    /* Nav Bar Glass */
-    --jpsm-bg-hover: rgba(255, 255, 255, 0.05);
+    --jpsm-bg-deep: #12122b;
+    /* Sidebar BG */
+    --jpsm-bg-card: #1c1c38;
+    /* Solid Card Fallback */
+    --jpsm-bg-card-glass: rgba(28, 28, 56, 0.95);
+    /* High-opacity Glass */
+    --jpsm-bg-hover: rgba(255, 255, 255, 0.1);
+
+    /* Text (High Contrast) */
+    --jpsm-text-primary: #ffffff;
+    --jpsm-text-secondary: #d1d1e0;
+    /* Brighter gray for accessibility */
+    --jpsm-text-tertiary: #a0a0c0;
+    /* Visible tertiary text */
 
     /* Borders & Dividers */
-    --jpsm-border-default: #2a2a40;
-    --jpsm-border-muted: #202030;
-    --jpsm-border-highlight: rgba(86, 211, 100, 0.5);
-
-    /* Text */
-    --jpsm-text-primary: #ffffff;
-    --jpsm-text-secondary: #a0a0b0;
-    --jpsm-text-tertiary: #6b6b80;
+    --jpsm-border-default: #2d2d4a;
+    --jpsm-border-muted: #1e1e35;
 
     /* Power BI Accents */
     --jpsm-accent-cyan: #00e0ff;
-    /* Electric Blue */
     --jpsm-accent-purple: #bd00ff;
-    /* Neon Purple */
-    --jpsm-accent-blue: #2563eb;
-    --jpsm-accent-green: #00ff9d;
-    --jpsm-accent-pink: #ff007f;
     --jpsm-status-success: #4ade80;
     --jpsm-status-error: #f43f5e;
-
-    /* Gradients */
-    --jpsm-gradient-brand: linear-gradient(135deg, #00e0ff 0%, #2563eb 100%);
-    --jpsm-gradient-card: linear-gradient(160deg, rgba(40, 40, 60, 0.6) 0%, rgba(20, 20, 30, 0.8) 100%);
-    --jpsm-gradient-glow: radial-gradient(circle at top right, rgba(0, 224, 255, 0.1), transparent 60%);
-
-    /* Shadows */
-    --jpsm-shadow-card: 0 4px 20px rgba(0, 0, 0, 0.4);
-    --jpsm-shadow-glow: 0 0 15px rgba(0, 224, 255, 0.15);
 
     /* Spacing & Sizes */
     --sidebar-width: 260px;
@@ -91,51 +77,20 @@ body.jetpack-store_page_jpsm-settings {
     --jpsm-space-md: 16px;
     --jpsm-space-lg: 24px;
     --jpsm-space-xl: 32px;
-
-    /* Radius */
     --jpsm-radius-sm: 8px;
     --jpsm-radius-md: 12px;
     --jpsm-radius-lg: 20px;
-    --jpsm-radius-full: 999px;
 
     /* Typography */
-    --jpsm-font: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --jpsm-font: 'Inter', system-ui, -apple-system, sans-serif;
     --jpsm-font-size-sm: 13px;
     --jpsm-font-size-md: 15px;
-    --jpsm-font-size-lg: 20px;
-    --jpsm-font-size-xl: 28px;
-    --jpsm-font-size-xxl: 42px;
-
-    /* Touch & Safe Area */
-    --jpsm-touch-min: 44px;
-    --safe-area-top: env(safe-area-inset-top, 0px);
-    --safe-area-bottom: env(safe-area-inset-bottom, 0px);
-
-    /* Mobile-First Spacing - Generous for touch */
-    --jpsm-space-xs: 8px;
-    --jpsm-space-sm: 12px;
-    --jpsm-space-md: 16px;
-    --jpsm-space-lg: 24px;
-    --jpsm-space-xl: 32px;
-
-    /* Radius - Softer, more modern */
-    --jpsm-radius-sm: 10px;
-    --jpsm-radius-md: 16px;
-    --jpsm-radius-lg: 24px;
-    --jpsm-radius-full: 100px;
-
-    /* Typography - Larger for mobile */
-    --jpsm-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-    --jpsm-font-size-sm: 14px;
-    --jpsm-font-size-md: 16px;
     --jpsm-font-size-lg: 18px;
     --jpsm-font-size-xl: 24px;
-    --jpsm-font-size-xxl: 32px;
+    --jpsm-font-size-xxl: 36px;
 
-    /* Touch Targets - 48px minimum */
+    /* Safe Area & Touch */
     --jpsm-touch-min: 48px;
-
-    /* Safe Areas for notch devices */
     --safe-area-top: env(safe-area-inset-top, 0px);
     --safe-area-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -171,11 +126,13 @@ body.jetpack-store_page_jpsm-settings {
 }
 
 .jpsm-kpi-card {
-    background: var(--jpsm-bg-card);
+    background: var(--jpsm-bg-card-glass);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border: 1px solid var(--jpsm-border-default);
     border-radius: var(--jpsm-radius-md);
+    background-color: var(--jpsm-bg-card);
+    /* Fallback */
     padding: var(--jpsm-space-md);
     display: flex;
     flex-direction: column;
@@ -203,10 +160,11 @@ body.jetpack-store_page_jpsm-settings {
 }
 
 .jpsm-kpi-label {
-    font-size: var(--jpsm-font-size-sm);
-    color: var(--jpsm-text-secondary);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--jpsm-text-tertiary);
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 1px;
     margin-bottom: var(--jpsm-space-xs);
 }
 
@@ -333,6 +291,8 @@ body.jetpack-store_page_jpsm-settings {
         flex: 1;
         padding: var(--jpsm-space-xl);
         overflow-y: auto;
+        background: var(--jpsm-bg-void);
+        /* Force dark background here too */
     }
 
     /* KPI Grid Expand */
