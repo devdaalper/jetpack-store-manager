@@ -120,9 +120,16 @@ body.jetpack-store_page_jpsm-settings {
 .jpsm-kpi-grid {
     display: grid;
     grid-template-columns: 1fr;
-    /* 1 col mobile */
+    /* Stack on mobile */
     gap: var(--jpsm-space-md);
-    margin-bottom: var(--jpsm-space-lg);
+    margin: 0 16px var(--jpsm-space-lg);
+    /* Add horizontal margin for mobile preview */
+}
+
+@media (min-width: 480px) {
+    .jpsm-kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 .jpsm-kpi-card {
@@ -184,13 +191,15 @@ body.jetpack-store_page_jpsm-settings {
 
 .jpsm-kpi-trend {
     position: absolute;
-    top: var(--jpsm-space-md);
-    right: var(--jpsm-space-md);
-    font-size: var(--jpsm-font-size-sm);
-    padding: 2px 6px;
+    bottom: var(--jpsm-space-sm);
+    right: var(--jpsm-space-sm);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
     border-radius: 4px;
-    background: rgba(74, 222, 128, 0.1);
+    background: rgba(74, 222, 128, 0.15);
     color: var(--jpsm-status-success);
+    border: 1px solid rgba(74, 222, 128, 0.2);
 }
 
 /* --- Desktop Layout (> 1024px) --- */
@@ -208,7 +217,12 @@ body.jetpack-store_page_jpsm-settings {
     .jpsm-nav-tabs,
     .jpsm-header p.jpsm-date-display
 
-    /* Adjust legacy header bits */
+    /* KPI Grid Expand */
+    .jpsm-kpi-grid {
+        grid-template-columns: repeat(4, 1fr);
+        margin: 0 0 var(--jpsm-space-lg);
+    }
+
         {
         display: none !important;
     }
@@ -667,12 +681,11 @@ select.jpsm-input-lg {
     font-weight: 500;
 }
 
-/* Revenue Summary Section */
+/* Revenue Summary Section - Legacy Overridden by Grid System */
 .jpsm-revenue-summary {
-    display: flex;
-    gap: 12px;
-    margin: 0 16px 24px;
-    align-items: stretch;
+    display: grid !important;
+    /* Force override legacy flex */
+    /* Grid properties already handled by .jpsm-kpi-grid class in class-jpsm-admin.php */
 }
 
 .jpsm-rev-today {
