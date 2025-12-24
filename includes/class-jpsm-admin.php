@@ -201,7 +201,14 @@ class JPSM_Admin
                 });
             }
 
-            // Render History
+            // Render History with Date Grouping
+            function formatDateHeader(dateStr) {
+                const date = new Date(dateStr + 'T00:00:00');
+                const options = { weekday: 'long', day: 'numeric', month: 'long' };
+                let formatted = date.toLocaleDateString('es-ES', options);
+                return '📅 ' + formatted.charAt(0).toUpperCase() + formatted.slice(1);
+            }
+
             function renderHistory() {
                 var containers = document.querySelectorAll('.jpsm-history-list');
                 if(containers.length === 0) return;
@@ -220,21 +227,32 @@ class JPSM_Admin
                         });
                     }
 
+                    var lastDate = '';
                     data.forEach(function(item) {
+                        var dateParts = item.time.split(' ');
+                        var itemDate = dateParts[0];
+
+                        if (!isRecentOnly && itemDate !== lastDate) {
+                            var dateHeader = document.createElement('tr');
+                            dateHeader.innerHTML = '<td colspan=\'3\' class=\'jpsm-history-date-header\'>' + formatDateHeader(itemDate) + '</td>';
+                            tbody.appendChild(dateHeader);
+                            lastDate = itemDate;
+                        }
+
                         var tr = document.createElement('tr');
-                        tr.innerHTML = `
-                            <td class='jpsm-col-check'>
-                                <input type='checkbox' class='jpsm-log-check' value='\${item.id}'>
-                            </td>
-                            <td class='jpsm-col-info'>
-                                <div class='jpsm-info-email'>\${item.email}</div>
-                                <div class='jpsm-info-subtext'>\${item.package} • \${item.time}</div>
-                            </td>
-                            <td class='jpsm-col-actions'>
-                                <button class='jpsm-resend-email' data-id='\${item.id}'>🔁</button>
-                                <button class='jpsm-delete-log' data-id='\${item.id}'>✕</button>
-                            </td>
-                        `;
+                        tr.innerHTML = ' \
+                            <td class=\'jpsm-col-check\'> \
+                                <input type=\'checkbox\' class=\'jpsm-log-check\' value=\'' + item.id + '\'> \
+                            </td> \
+                            <td class=\'jpsm-col-info\'> \
+                                <div class=\'jpsm-info-email\'>' + item.email + '</div> \
+                                <div class=\'jpsm-info-subtext\'>' + item.package + ' • ' + dateParts[1].substring(0,5) + '</div> \
+                            </td> \
+                            <td class=\'jpsm-col-actions\'> \
+                                <button class=\'jpsm-resend-email\' data-id=\'' + item.id + '\'>🔁</button> \
+                                <button class=\'jpsm-delete-log\' data-id=\'' + item.id + '\'>✕</button> \
+                            </td> \
+                        ';
                         tbody.appendChild(tr);
                     });
                 });
@@ -568,14 +586,14 @@ class JPSM_Admin
 
             <!-- Dashboard Container (Grid Layout) -->
             <div class="jpsm-dashboard-container">
-                
+
                 <!-- Desktop Sidebar -->
                 <aside class="jpsm-sidebar">
                     <div class="jpsm-brand">
                         <h2>🚀 JetPack</h2>
                         <span class="jpsm-badge">PRO</span>
                     </div>
-                    
+
                     <nav class="jpsm-nav-menu">
                         <a href="#" class="jpsm-nav-item active" onclick="jpsmOpenTab(event, 'jpsm-tab-new')">
                             <span class="icon">🛒</span> Nueva Venta
@@ -595,7 +613,7 @@ class JPSM_Admin
 
                 <!-- Main Content Area -->
                 <main class="jpsm-main-content">
-                    
+
                     <!-- Header moved inside Main Content -->
                     <div class="jpsm-header">
                         <h1>Panel de Gestión, <?php echo wp_get_current_user()->display_name; ?></h1>
@@ -609,7 +627,7 @@ class JPSM_Admin
                             <div class="jpsm-kpi-value"><?php echo $sales_today; ?></div>
                             <span class="jpsm-kpi-trend positive">+100%</span> <!-- Placeholder logic -->
                         </div>
-                        
+
                         <div class="jpsm-kpi-card">
                             <span class="jpsm-kpi-label">Ingresos MXN (Hoy)</span>
                             <div class="jpsm-kpi-value positive">$<?php echo number_format($rev_today_mxn, 2); ?></div>
@@ -633,356 +651,342 @@ class JPSM_Admin
                         <button class="jpsm-tab-link" onclick="jpsmOpenTab(event, 'jpsm-tab-stats')">Métricas</button>
                     </div>
 
-            <!-- TAB 1: NEW SALE -->
-            <div id="jpsm-tab-new" class="jpsm-tab-content" style="display:block;">
-                <div class="jpsm-mobile-card">
-                    <h3>✉️ Registrar Nueva Venta</h3>
-                    <form id="jpsm-registration-form">
-                        <label>Email del Cliente</label>
-                        <div class="jpsm-input-group" style="position:relative;">
-                            <input type="email" id="client_email" name="client_email" required placeholder="cliente@ejemplo.com"
-                                class="jpsm-input-lg" style="padding-right: 80px;">
-                            <button type="button" id="jpsm-paste-email"
-                                style="position:absolute; right:5px; top:5px; bottom:5px; background:#2563eb; color:white; border:none; border-radius:6px; padding:0 10px; cursor:pointer;">📋
-                                Pegar</button>
-                        </div>
+                    <!-- TAB 1: NEW SALE -->
+                    <div id="jpsm-tab-new" class="jpsm-tab-content" style="display:block;">
+                        <div class="jpsm-mobile-card">
+                            <h3>✉️ Registrar Nueva Venta</h3>
+                            <form id="jpsm-registration-form">
+                                <label>Email del Cliente</label>
+                                <div class="jpsm-input-group" style="position:relative;">
+                                    <input type="email" id="client_email" name="client_email" required
+                                        placeholder="cliente@ejemplo.com" class="jpsm-input-lg" style="padding-right: 80px;">
+                                    <button type="button" id="jpsm-paste-email"
+                                        style="position:absolute; right:5px; top:5px; bottom:5px; background:#2563eb; color:white; border:none; border-radius:6px; padding:0 10px; cursor:pointer;">📋
+                                        Pegar</button>
+                                </div>
 
-                        <div class="jpsm-form-row">
-                            <div>
-                                <label>Paquete</label>
-                                <select id="package_type" name="package_type" required class="jpsm-input-lg">
-                                    <option value="">Seleccionar paquete...</option>
-                                    <option value="basic">📦 Básico</option>
-                                    <option value="vip">⭐ VIP</option>
-                                    <option value="full">💎 Full</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label>Región</label>
-                                <select id="region" name="region" required class="jpsm-input-lg">
-                                    <option value="national">🇲🇽 Nacional (MX)</option>
-                                    <option value="international">🌍 Internacional</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- VIP Sub-packages Dropdown (Conditional) -->
-                        <div id="vip-subtype-container" style="display:none; margin-top:10px;">
-                            <label style="color:#8b5cf6; display:block; margin-bottom:8px;">Variante VIP</label>
-
-                            <div class="jpsm-radio-group">
-                                <label class="jpsm-radio-option">
-                                    <input type="radio" name="vip_subtype" value="vip_videos" checked>
-                                    <span>VIP + VIDEOS</span>
-                                </label>
-                                <label class="jpsm-radio-option">
-                                    <input type="radio" name="vip_subtype" value="vip_pelis">
-                                    <span>VIP + PELIS</span>
-                                </label>
-                                <label class="jpsm-radio-option">
-                                    <input type="radio" name="vip_subtype" value="vip_basic">
-                                    <span>VIP + BÁSICO</span>
-                                </label>
-                            </div>
-                        </div>
-
-                        <button type="submit" id="jpsm-submit-sale" class="jpsm-btn-block">Enviar Pedido 🚀</button>
-                        <div id="jpsm-message"></div>
-                    </form>
-                </div>
-
-                <!-- Recent Activity on Main Screen (Visible by default) -->
-                <div class="jpsm-mobile-card" style="margin-top:20px;">
-                    <h3>📋 Actividad Reciente</h3>
-                    <div class="jpsm-history-list">
-                    <div class="jpsm-history-list">
-                        <table class="jpsm-modern-table">
-                            <thead>
-                                <tr>
-                                    <th style='width:40px;'></th>
-                                    <th>Información</th>
-                                    <th style='text-align:right;'>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="jpsm-activity-body-target"></tbody>
-                        </table>
-                    </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 2: HISTORY -->
-            <div id="jpsm-tab-history" class="jpsm-tab-content">
-                <div class="jpsm-mobile-card">
-                    <h3>📋 Historial Completo</h3>
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap:10px;">
-                        <button id="jpsm-bulk-delete" style="display:none; font-size:12px; padding:8px 12px;">
-                            Borrar Seleccionados (<span id="jpsm-selected-count">0</span>)
-                        </button>
-                        <button onclick="if(confirm('¿Borrar TODO el historial?')) { jpsmDeleteAllLogs(); }"
-                            style="background:transparent; border:1px solid var(--jpsm-danger); color:var(--jpsm-danger); padding:8px 12px; border-radius:6px; font-size:12px; margin-left:auto;">🗑️
-                            Vaciado Total</button>
-                    </div>
-                    <div class="jpsm-history-list">
-                        <table class="jpsm-modern-table">
-                            <thead>
-                                <tr>
-                                    <th style='width:40px;'><input type='checkbox' id='jpsm-check-all'></th>
-                                    <th>Información</th>
-                                    <th style='text-align:right;'>Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody class="jpsm-activity-body-target">
-                                <!-- JS fills this -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- TAB 3: STATS -->
-            <div id="jpsm-tab-stats" class="jpsm-tab-content">
-                <div class="jpsm-kpi-grid" style="margin-bottom: var(--jpsm-space-md);">
-                    <div class="jpsm-kpi-card">
-                        <span class="jpsm-kpi-label">Ventas Totales (Histórico)</span>
-                        <div class="jpsm-kpi-value" id="stat-total"><?php echo $total_sales; ?></div>
-                    </div>
-                    
-                    <div class="jpsm-kpi-card">
-                        <span class="jpsm-kpi-label">Ticket Promedio (🇲🇽)</span>
-                        <div class="jpsm-kpi-value positive">$<?php echo number_format($avg_ticket_mxn, 0); ?></div>
-                    </div>
-
-                    <div class="jpsm-kpi-card">
-                        <span class="jpsm-kpi-label">Ticket Promedio (🌍)</span>
-                        <div class="jpsm-kpi-value accent">$<?php echo number_format($avg_ticket_usd, 0); ?></div>
-                    </div>
-                </div>
-
-                <div class="jpsm-mobile-card" style="margin-top: -10px;">
-                    <h3 style="color:var(--jpsm-accent-cyan);">🏆 Top 5 Clientes</h3>
-                    <div class="jpsm-top-clients">
-                        <?php 
-                        // Get max value for progress bars
-                        $max_total = 0;
-                        if (!empty($top_customers)) {
-                            $first = reset($top_customers);
-                            $max_total = $first['total'];
-                        }
-
-                        foreach ($top_customers as $mail => $c): 
-                            $percent = ($max_total > 0) ? ($c['total'] / $max_total) * 100 : 0;
-                        ?>
-                            <div class="jpsm-top-client-item" style="--progress-width: <?php echo $percent; ?>%;">
-                                <div style="display:flex; flex-direction:column; width:100%; position:relative; z-index:2;">
-                                    <div class="jpsm-client-meta">
-                                        <span class="jpsm-client-email"><?php echo esc_html($mail); ?></span>
-                                        <span class="jpsm-client-total">
-                                            <?php
-                                            $parts = array();
-                                            if ($c['mxn'] > 0) $parts[] = "$" . number_format($c['mxn'], 0);
-                                            if ($c['usd'] > 0) $parts[] = "$" . number_format($c['usd'], 0) . " USD";
-                                            echo implode(' + ', $parts);
-                                            ?>
-                                        </span>
+                                <div class="jpsm-form-row">
+                                    <div>
+                                        <label>Paquete</label>
+                                        <select id="package_type" name="package_type" required class="jpsm-input-lg">
+                                            <option value="">Seleccionar paquete...</option>
+                                            <option value="basic">📦 Básico</option>
+                                            <option value="vip">⭐ VIP</option>
+                                            <option value="full">💎 Full</option>
+                                        </select>
                                     </div>
-                                    <div style="display:flex; justify-content:space-between; margin-top:4px;">
-                                        <span class="jpsm-client-count"><?php echo $c['count']; ?> Compras</span>
-                                        <span class="jpsm-client-count"><?php echo number_format($percent, 0); ?>% Vol.</span>
+                                    <div>
+                                        <label>Región</label>
+                                        <select id="region" name="region" required class="jpsm-input-lg">
+                                            <option value="national">🇲🇽 Nacional (MX)</option>
+                                            <option value="international">🌍 Internacional</option>
+                                        </select>
                                     </div>
                                 </div>
+
+                                <!-- VIP Sub-packages Dropdown (Conditional) -->
+                                <div id="vip-subtype-container" style="display:none; margin-top:10px;">
+                                    <label style="color:#8b5cf6; display:block; margin-bottom:8px;">Variante VIP</label>
+
+                                    <div class="jpsm-radio-group">
+                                        <label class="jpsm-radio-option">
+                                            <input type="radio" name="vip_subtype" value="vip_videos" checked>
+                                            <span>VIP + VIDEOS</span>
+                                        </label>
+                                        <label class="jpsm-radio-option">
+                                            <input type="radio" name="vip_subtype" value="vip_pelis">
+                                            <span>VIP + PELIS</span>
+                                        </label>
+                                        <label class="jpsm-radio-option">
+                                            <input type="radio" name="vip_subtype" value="vip_basic">
+                                            <span>VIP + BÁSICO</span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="jpsm-submit-sale" class="jpsm-btn-block">Enviar Pedido 🚀</button>
+                                <div id="jpsm-message"></div>
+                            </form>
+                        </div>
+
+                    </div>
+
+                    <!-- TAB 2: HISTORY -->
+                    <div id="jpsm-tab-history" class="jpsm-tab-content">
+                        <div class="jpsm-mobile-card">
+                            <h3>📋 Historial Completo</h3>
+                            <div
+                                style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; gap:10px;">
+                                <button id="jpsm-bulk-delete" style="display:none; font-size:12px; padding:8px 12px;">
+                                    Borrar Seleccionados (<span id="jpsm-selected-count">0</span>)
+                                </button>
+                                <button onclick="if(confirm('¿Borrar TODO el historial?')) { jpsmDeleteAllLogs(); }"
+                                    style="background:transparent; border:1px solid var(--jpsm-danger); color:var(--jpsm-danger); padding:8px 12px; border-radius:6px; font-size:12px; margin-left:auto;">🗑️
+                                    Vaciado Total</button>
                             </div>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
-
-                <!-- Charts Section -->
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-                <div class="jpsm-charts-grid">
-                    <div class="jpsm-mobile-card">
-                        <h3>👥 Recurrencia</h3>
-                        <div style="height:180px; position:relative;">
-                            <canvas id="jpsmMobileChartRecurrence"></canvas>
+                            <div class="jpsm-history-list">
+                                <table class="jpsm-modern-table">
+                                    <thead>
+                                        <tr>
+                                            <th style='width:40px;'><input type='checkbox' id='jpsm-check-all'></th>
+                                            <th>Información</th>
+                                            <th style='text-align:right;'>Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="jpsm-activity-body-target">
+                                        <!-- JS fills this -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="jpsm-mobile-card">
-                        <h3>📦 Por Paquete</h3>
-                        <div style="height:180px; position:relative;">
-                            <canvas id="jpsmMobileChartPackage"></canvas>
+                    <!-- TAB 3: STATS -->
+                    <div id="jpsm-tab-stats" class="jpsm-tab-content">
+                        <div class="jpsm-kpi-grid" style="margin-bottom: var(--jpsm-space-md);">
+                            <div class="jpsm-kpi-card">
+                                <span class="jpsm-kpi-label">Ventas Totales (Histórico)</span>
+                                <div class="jpsm-kpi-value" id="stat-total"><?php echo $total_sales; ?></div>
+                            </div>
+
+                            <div class="jpsm-kpi-card">
+                                <span class="jpsm-kpi-label">Ticket Promedio (🇲🇽)</span>
+                                <div class="jpsm-kpi-value positive">$<?php echo number_format($avg_ticket_mxn, 0); ?></div>
+                            </div>
+
+                            <div class="jpsm-kpi-card">
+                                <span class="jpsm-kpi-label">Ticket Promedio (🌍)</span>
+                                <div class="jpsm-kpi-value accent">$<?php echo number_format($avg_ticket_usd, 0); ?></div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div class="jpsm-mobile-card">
-                        <h3>🌍 Por Región</h3>
-                        <div style="height:180px; position:relative;">
-                            <canvas id="jpsmMobileChartRegion"></canvas>
-                        </div>
-                    </div>
-
-                    <div class="jpsm-mobile-card">
-                        <h3>⏰ Horas Pico</h3>
-                        <div style="height:180px; position:relative;">
-                            <canvas id="jpsmMobileChartHourly"></canvas>
-                        </div>
-                    </div>
-                </div>
-
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        // Common Chart Config
-                        Chart.defaults.color = '#8b949e';
-                        Chart.defaults.borderColor = '#30363d';
-
-                        // Package Chart
-                        var ctxPkg = document.getElementById('jpsmMobileChartPackage');
-                        if (ctxPkg) {
-                            new Chart(ctxPkg, {
-                                type: 'doughnut',
-                                data: {
-                                    labels: ['Básico', 'VIP', 'Full'],
-                                    datasets: [{
-                                        data: [<?php echo $packages['basic']; ?>, <?php echo $packages['vip']; ?>,
-                                            <?php echo $packages['full']; ?>
-                                        ],
-                                        backgroundColor: ['#00ff9d', '#bd00ff', '#00e0ff'],
-                                        borderWidth: 0
-                                    }]
-                                },
-                                options: {
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            position: 'right',
-                                            labels: {
-                                                boxWidth: 12,
-                                                color: '#d1d1e0',
-                                                font: { size: 11 }
-                                            }
-                                        }
-                                    }
+                        <div class="jpsm-mobile-card" style="margin-top: -10px;">
+                            <h3 style="color:var(--jpsm-accent-cyan);">🏆 Top 5 Clientes</h3>
+                            <div class="jpsm-top-clients">
+                                <?php
+                                // Get max value for progress bars
+                                $max_total = 0;
+                                if (!empty($top_customers)) {
+                                    $first = reset($top_customers);
+                                    $max_total = $first['total'];
                                 }
-                            });
-                        }
 
-                        // Region Chart
-                        var ctxReg = document.getElementById('jpsmMobileChartRegion');
-                        if (ctxReg) {
-                            new Chart(ctxReg, {
-                                type: 'bar',
-                                data: {
-                                    labels: ['Nac.', 'Int.'],
-                                    datasets: [{
-                                        label: 'Ventas',
-                                        data: [<?php echo $regions['national']; ?>,
-                                            <?php echo $regions['international']; ?>
-                                        ],
-                                        backgroundColor: ['#4ade80', '#2563eb'],
-                                        borderRadius: 4
-                                    }]
-                                },
-                                options: {
-                                    plugins: {
-                                        legend: {
-                                            display: false
-                                        }
-                                    },
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            grid: { color: 'rgba(255,255,255,0.05)' },
-                                            ticks: { color: '#a0a0c0', font: { size: 10 } }
+                                foreach ($top_customers as $mail => $c):
+                                    $percent = ($max_total > 0) ? ($c['total'] / $max_total) * 100 : 0;
+                                    ?>
+                                    <div class="jpsm-top-client-item" style="--progress-width: <?php echo $percent; ?>%;">
+                                        <div style="display:flex; flex-direction:column; width:100%; position:relative; z-index:2;">
+                                            <div class="jpsm-client-meta">
+                                                <span class="jpsm-client-email"><?php echo esc_html($mail); ?></span>
+                                                <span class="jpsm-client-total">
+                                                    <?php
+                                                    $parts = array();
+                                                    if ($c['mxn'] > 0)
+                                                        $parts[] = "$" . number_format($c['mxn'], 0);
+                                                    if ($c['usd'] > 0)
+                                                        $parts[] = "$" . number_format($c['usd'], 0) . " USD";
+                                                    echo implode(' + ', $parts);
+                                                    ?>
+                                                </span>
+                                            </div>
+                                            <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                                                <span class="jpsm-client-count"><?php echo $c['count']; ?> Compras</span>
+                                                <span class="jpsm-client-count"><?php echo number_format($percent, 0); ?>%
+                                                    Vol.</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
+
+                        <!-- Charts Section -->
+                        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+                        <div class="jpsm-charts-grid">
+                            <div class="jpsm-mobile-card">
+                                <h3>👥 Recurrencia</h3>
+                                <div style="height:180px; position:relative;">
+                                    <canvas id="jpsmMobileChartRecurrence"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="jpsm-mobile-card">
+                                <h3>📦 Por Paquete</h3>
+                                <div style="height:180px; position:relative;">
+                                    <canvas id="jpsmMobileChartPackage"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="jpsm-mobile-card">
+                                <h3>🌍 Por Región</h3>
+                                <div style="height:180px; position:relative;">
+                                    <canvas id="jpsmMobileChartRegion"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="jpsm-mobile-card">
+                                <h3>⏰ Horas Pico</h3>
+                                <div style="height:180px; position:relative;">
+                                    <canvas id="jpsmMobileChartHourly"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <script>
+                            document.addEventListener('DOMContentLoaded', function () {
+                                // Common Chart Config
+                                Chart.defaults.color = '#8b949e';
+                                Chart.defaults.borderColor = '#30363d';
+
+                                // Package Chart
+                                var ctxPkg = document.getElementById('jpsmMobileChartPackage');
+                                if (ctxPkg) {
+                                    new Chart(ctxPkg, {
+                                        type: 'doughnut',
+                                        data: {
+                                            labels: ['Básico', 'VIP', 'Full'],
+                                            datasets: [{
+                                                data: [<?php echo $packages['basic']; ?>, <?php echo $packages['vip']; ?>,
+                                                    <?php echo $packages['full']; ?>
+                                                ],
+                                                backgroundColor: ['#00ff9d', '#bd00ff', '#00e0ff'],
+                                                borderWidth: 0
+                                            }]
                                         },
-                                        x: {
-                                            grid: { display: false },
-                                            ticks: { color: '#a0a0c0', font: { size: 10 } }
-                                        }
-                                    }
-                                }
-                            });
-                        }
-
-                        // Recurrence Chart
-                        var ctxRec = document.getElementById('jpsmMobileChartRecurrence');
-                        if (ctxRec) {
-                            new Chart(ctxRec, {
-                                type: 'doughnut',
-                                data: {
-                                    labels: ['Nuevos', 'Recurrentes'],
-                                    datasets: [{
-                                        data: [<?php echo $new_clients; ?>, <?php echo $recurring_clients; ?>],
-                                        backgroundColor: ['#00ff9d', '#2563eb'],
-                                        borderWidth: 0
-                                    }]
-                                },
-                                options: {
-                                    maintainAspectRatio: false,
-                                    plugins: {
-                                        legend: {
-                                            position: 'right',
-                                            labels: {
-                                                boxWidth: 12,
-                                                color: '#d1d1e0',
-                                                font: { size: 11 }
+                                        options: {
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: {
+                                                    position: 'right',
+                                                    labels: {
+                                                        boxWidth: 12,
+                                                        color: '#d1d1e0',
+                                                        font: { size: 11 }
+                                                    }
+                                                }
                                             }
                                         }
-                                    }
+                                    });
                                 }
-                            });
-                        }
 
-                        // Hourly Chart
-                        var ctxHour = document.getElementById('jpsmMobileChartHourly');
-                        if (ctxHour) {
-                            new Chart(ctxHour, {
-                                type: 'line',
-                                data: {
-                                    labels: ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'],
-                                    datasets: [{
-                                        label: 'Ventas',
-                                        data: [
-                                            <?php
-                                            $points = array();
-                                            for ($i = 0; $i < 24; $i += 2) {
-                                                $points[] = $hourly_sales[$i];
-                                            }
-                                            echo implode(',', $points);
-                                            ?>
-                                        ],
-                                        borderColor: '#00e0ff',
-                                        backgroundColor: 'rgba(0, 224, 255, 0.1)',
-                                        fill: true,
-                                        tension: 0.4,
-                                        pointRadius: 4,
-                                        pointBackgroundColor: '#00e0ff'
-                                    }]
-                                },
-                                options: {
-                                    maintainAspectRatio: false,
-                                    scales: {
-                                        y: {
-                                            beginAtZero: true,
-                                            grid: { color: 'rgba(255,255,255,0.05)' },
-                                            ticks: { color: '#a0a0c0', font: { size: 10 } }
+                                // Region Chart
+                                var ctxReg = document.getElementById('jpsmMobileChartRegion');
+                                if (ctxReg) {
+                                    new Chart(ctxReg, {
+                                        type: 'bar',
+                                        data: {
+                                            labels: ['Nac.', 'Int.'],
+                                            datasets: [{
+                                                label: 'Ventas',
+                                                data: [<?php echo $regions['national']; ?>,
+                                                    <?php echo $regions['international']; ?>
+                                                ],
+                                                backgroundColor: ['#4ade80', '#2563eb'],
+                                                borderRadius: 4
+                                            }]
                                         },
-                                        x: {
-                                            grid: { display: false },
-                                            ticks: { color: '#a0a0c0', font: { size: 10 } }
+                                        options: {
+                                            plugins: {
+                                                legend: {
+                                                    display: false
+                                                }
+                                            },
+                                            scales: {
+                                                y: {
+                                                    beginAtZero: true,
+                                                    grid: { color: 'rgba(255,255,255,0.05)' },
+                                                    ticks: { color: '#a0a0c0', font: { size: 10 } }
+                                                },
+                                                x: {
+                                                    grid: { display: false },
+                                                    ticks: { color: '#a0a0c0', font: { size: 10 } }
+                                                }
+                                            }
                                         }
-                                    },
-                                    plugins: {
-                                        legend: {
-                                            display: false
+                                    });
+                                }
+
+                                // Recurrence Chart
+                                var ctxRec = document.getElementById('jpsmMobileChartRecurrence');
+                                if (ctxRec) {
+                                    new Chart(ctxRec, {
+                                        type: 'doughnut',
+                                        data: {
+                                            labels: ['Nuevos', 'Recurrentes'],
+                                            datasets: [{
+                                                data: [<?php echo $new_clients; ?>, <?php echo $recurring_clients; ?>],
+                                                backgroundColor: ['#00ff9d', '#2563eb'],
+                                                borderWidth: 0
+                                            }]
+                                        },
+                                        options: {
+                                            maintainAspectRatio: false,
+                                            plugins: {
+                                                legend: {
+                                                    position: 'right',
+                                                    labels: {
+                                                        boxWidth: 12,
+                                                        color: '#d1d1e0',
+                                                        font: { size: 11 }
+                                                    }
+                                                }
+                                            }
                                         }
-                                    }
+                                    });
+                                }
+
+                                // Hourly Chart
+                                var ctxHour = document.getElementById('jpsmMobileChartHourly');
+                                if (ctxHour) {
+                                    new Chart(ctxHour, {
+                                        type: 'line',
+                                        data: {
+                                            labels: ['00', '02', '04', '06', '08', '10', '12', '14', '16', '18', '20', '22'],
+                                            datasets: [{
+                                                label: 'Ventas',
+                                                data: [
+                                                    <?php
+                                                    $points = array();
+                                                    for ($i = 0; $i < 24; $i += 2) {
+                                                        $points[] = $hourly_sales[$i];
+                                                    }
+                                                    echo implode(',', $points);
+                                                    ?>
+                                                ],
+                                                borderColor: '#00e0ff',
+                                                backgroundColor: 'rgba(0, 224, 255, 0.1)',
+                                                fill: true,
+                                                tension: 0.4,
+                                                pointRadius: 4,
+                                                pointBackgroundColor: '#00e0ff'
+                                            }]
+                                        },
+                                        options: {
+                                            maintainAspectRatio: false,
+                                            scales: {
+                                                y: {
+                                                    beginAtZero: true,
+                                                    grid: { color: 'rgba(255,255,255,0.05)' },
+                                                    ticks: { color: '#a0a0c0', font: { size: 10 } }
+                                                },
+                                                x: {
+                                                    grid: { display: false },
+                                                    ticks: { color: '#a0a0c0', font: { size: 10 } }
+                                                }
+                                            },
+                                            plugins: {
+                                                legend: {
+                                                    display: false
+                                                }
+                                            }
+                                        }
+                                    });
                                 }
                             });
-                        }
-                    });
-                </script>
+                        </script>
+                    </div>
             </div>
-        </div>
 
         </div>
 

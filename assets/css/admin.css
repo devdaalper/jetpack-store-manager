@@ -260,8 +260,25 @@ body.jetpack-store_page_jpsm-settings {
         background: rgba(255, 255, 255, 0.1);
         padding: 2px 6px;
         border-radius: 4px;
-        font-size: 10px;
+    }
+
+    /* History Date Header */
+    .jpsm-history-date-header {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 2px 16px;
+        font-size: 11px;
+        font-weight: 700;
+        color: var(--jpsm-accent-cyan);
+        text-transform: uppercase;
         letter-spacing: 1px;
+        border-top: 1px solid var(--jpsm-border-muted);
+        border-bottom: 1px solid var(--jpsm-border-muted);
+    }
+
+    .jpsm-history-date-header:first-child {
+        border-top: none;
+        border-top-left-radius: inherit;
+        border-top-right-radius: inherit;
     }
 
     .jpsm-nav-menu {
@@ -353,29 +370,27 @@ body.jetpack-store_page_jpsm-settings {
 /* --- Navigation Tabs - BOTTOM POSITIONED (Thumb Zone) --- */
 .jpsm-nav-tabs {
     position: fixed;
-    bottom: 0;
-    left: 0;
-    right: 0;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
     display: flex;
-    gap: 0;
-    background: var(--jpsm-bg-glass);
+    background: rgba(18, 18, 43, 0.8);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    padding: var(--jpsm-space-sm);
-    padding-bottom: calc(var(--jpsm-space-sm) + var(--safe-area-bottom));
-    border-top: 1px solid var(--jpsm-border-muted);
-    box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.4);
+    padding: 6px;
+    border-radius: 40px;
+    /* Pill shape */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     z-index: 1000;
 }
 
 @media (min-width: 1024px) {
     .jpsm-nav-tabs {
-        max-width: 600px;
-        left: 50%;
-        transform: translateX(-50%);
-        border-radius: var(--jpsm-radius-lg) var(--jpsm-radius-lg) 0 0;
-        bottom: 20px;
-        border: 1px solid var(--jpsm-border-muted);
+        max-width: 400px;
+        left: calc(50% + 130px);
+        /* Centered relative to main content */
+        bottom: 30px;
     }
 }
 
@@ -384,14 +399,14 @@ body.jetpack-store_page_jpsm-settings {
     flex: 1;
     background: transparent;
     border: none;
-    color: var(--jpsm-text-secondary);
-    padding: var(--jpsm-space-md) var(--jpsm-space-sm);
+    color: var(--jpsm-text-tertiary);
+    padding: 10px 16px;
     min-height: var(--jpsm-touch-min);
-    font-size: 13px;
+    font-size: 12px;
     font-weight: 600;
     cursor: pointer;
-    border-radius: var(--jpsm-radius-md);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 30px;
+    transition: all 0.2s ease;
     text-align: center;
     position: relative;
     display: flex;
