@@ -1,0 +1,4 @@
+interface:
+  display_name: "AI Knowledge Habit"
+  short_description: "Read/write _ai_knowledge notes for every coding task"
+  default_prompt: "Create or update _ai_knowledge notes before and after coding work."
