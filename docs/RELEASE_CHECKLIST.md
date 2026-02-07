@@ -26,7 +26,13 @@ This repo uses a two-layer validation:
    - Sale -> History shows a new entry
    - Tier resolution returns expected tier
 
+## Staging / Production-Like Validation (Recommended)
+Run these in an environment with real SMTP + B2/S3 credentials:
+- Sale email is delivered (new sale + resend).
+- MediaVault login, search, and at least one real download works (signed URL returns 200).
+- Index sync completes without 403 and the index count changes as expected.
+- Guest mode + logout behave correctly (cookie set/cleared + redirects).
+
 ## Notes About Local Environment
 - Local SMTP may fail: email sending can error while persistence + endpoint contracts still pass.
 - Local B2/S3 credentials may be absent: index sync can return 403 while endpoint contracts still pass.
-
