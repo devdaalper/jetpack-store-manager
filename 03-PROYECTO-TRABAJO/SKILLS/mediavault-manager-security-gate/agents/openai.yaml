@@ -1,0 +1,5 @@
+interface:
+  display_name: "MediaVault Security Gate"
+  short_description: "Compuerta de seguridad pre-release"
+  brand_color: "#EA580C"
+  default_prompt: "Usa $mediavault-manager-security-gate para ejecutar la compuerta de seguridad (repo + dist ZIP) y corregir fugas antes de un release."

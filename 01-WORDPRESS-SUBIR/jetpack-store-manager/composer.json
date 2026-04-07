@@ -1,0 +1,21 @@
+{
+  "name": "daalper/jetpack-store-manager",
+  "description": "JetPack Store Manager (tests + release discipline)",
+  "type": "wordpress-plugin",
+  "require": {
+    "php": ">=8.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^11.0"
+  },
+  "scripts": {
+    "test": "phpunit -c phpunit.xml",
+    "integration": "php scripts/integration/wpnow_endpoints_test.php",
+    "security:gate": "bash SKILLS/mediavault-manager-security-gate/scripts/security_gate.sh --build",
+    "release:verify": [
+      "@test",
+      "@integration",
+      "@security:gate"
+    ]
+  }
+}

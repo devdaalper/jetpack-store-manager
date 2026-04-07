@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+*.log
+/vendor/
+.phpunit.cache/
+/_ai_knowledge/
+/dist/
+debug_index.php
+msg

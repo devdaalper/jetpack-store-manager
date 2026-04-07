@@ -4,5 +4,14 @@ node_modules/
 /vendor/
 .phpunit.cache/
 /_ai_knowledge/
+/dist/
 debug_index.php
 msg
+02-DESKTOP-BPM-APP/.venv/
+02-DESKTOP-BPM-APP/.pytest_cache/
+02-DESKTOP-BPM-APP/.mypy_cache/
+02-DESKTOP-BPM-APP/.ruff_cache/
+02-DESKTOP-BPM-APP/dist/
+02-DESKTOP-BPM-APP/build/
+02-DESKTOP-BPM-APP/*.spec
+02-DESKTOP-BPM-APP/local_data/
