@@ -1,0 +1,13 @@
+{
+  "name": "jetpack-store-manager",
+  "version": "1.3.0",
+  "private": true,
+  "description": "Build tooling for JetPack Store Manager WordPress plugin",
+  "scripts": {
+    "build": "node build.mjs",
+    "build:watch": "node build.mjs --watch"
+  },
+  "devDependencies": {
+    "esbuild": "^0.24.0"
+  }
+}

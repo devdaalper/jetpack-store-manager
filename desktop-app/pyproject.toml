@@ -1,0 +1,81 @@
+[project]
+name = "jpsm-bpm-desktop"
+version = "0.1.0"
+description = "Desktop GUI para análisis BPM masivo e integración con MediaVault"
+license = {text = "MIT"}
+authors = [
+  {name = "JetPackStore", email = "dev@jetpackstore.com"},
+]
+readme = "README.md"
+requires-python = ">=3.11"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: End Users/Desktop",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: MacOS",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Multimedia :: Sound/Audio :: Analysis",
+]
+dependencies = [
+  "PySide6>=6.8.0,<6.9",
+  "requests>=2.32.0,<3",
+  "keyring>=25.0.0,<26",
+  "numpy>=1.26.0,<3",
+  "librosa>=0.10.2,<1",
+  "soundfile>=0.12.1,<1",
+]
+
+[project.scripts]
+jpsm-bpm-desktop = "bpm_desktop.main:main"
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0,<9",
+  "pytest-cov>=6.0,<7",
+  "ruff>=0.8,<1",
+]
+
+[build-system]
+requires = ["setuptools>=69.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# ─── Ruff (linting + formatting) ─────────────────────────────────────
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+  "E",    # pycodestyle errors
+  "W",    # pycodestyle warnings
+  "F",    # pyflakes
+  "I",    # isort
+  "UP",   # pyupgrade
+  "B",    # flake8-bugbear
+  "SIM",  # flake8-simplify
+  "RUF",  # ruff-specific
+]
+ignore = [
+  "E501",   # line length (handled by formatter)
+  "SIM108", # ternary operator (readability preference)
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["bpm_desktop"]
+
+# ─── Pytest ───────────────────────────────────────────────────────────
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-v --tb=short"

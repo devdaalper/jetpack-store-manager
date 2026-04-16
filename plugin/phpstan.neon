@@ -1,0 +1,31 @@
+includes:
+  - vendor/szepeviktor/phpstan-wordpress/extension.neon
+  - phpstan-baseline.neon
+
+parameters:
+  # Level 5: catches type errors, undefined methods, wrong argument counts.
+  # Raise to 6+ after clearing baseline errors over time.
+  level: 5
+
+  paths:
+    - jetpack-store-manager.php
+    - includes/
+    - uninstall.php
+
+  excludePaths:
+    - vendor/
+
+  # Scan bootstrap first so global functions / constants are known.
+  scanFiles:
+    - jetpack-store-manager.php
+    - includes/modules/mediavault/loader.php
+
+  # WordPress stubs are provided by phpstan-wordpress extension.
+  # Add any project-specific ignores below.
+  ignoreErrors:
+    # Global functions defined in bootstrap (jpsm_asset_path, etc.)
+    - '#Function jpsm_asset_path not found#'
+    - '#Function jpsm_mv_client_asset_file not found#'
+    - '#Function jpsm_mv_client_asset_version not found#'
+
+  reportUnmatchedIgnoredErrors: false

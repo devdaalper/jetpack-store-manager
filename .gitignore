@@ -1,17 +1,27 @@
+# ─── Generados ────────────────────────────────────────
 node_modules/
 .DS_Store
 *.log
-/vendor/
 .phpunit.cache/
+
+# ─── Plugin: archivos dev-only ────────────────────────
+plugin/vendor/
+plugin/node_modules/
+
+# ─── Desktop app: entornos locales ───────────────────
+desktop-app/.venv/
+desktop-app/.pytest_cache/
+desktop-app/.mypy_cache/
+desktop-app/.ruff_cache/
+desktop-app/dist/
+desktop-app/build/
+desktop-app/*.spec
+desktop-app/local_data/
+
+# ─── Build artifacts ─────────────────────────────────
+dist/
 /_ai_knowledge/
-/dist/
-debug_index.php
-msg
-02-DESKTOP-BPM-APP/.venv/
-02-DESKTOP-BPM-APP/.pytest_cache/
-02-DESKTOP-BPM-APP/.mypy_cache/
-02-DESKTOP-BPM-APP/.ruff_cache/
-02-DESKTOP-BPM-APP/dist/
-02-DESKTOP-BPM-APP/build/
-02-DESKTOP-BPM-APP/*.spec
-02-DESKTOP-BPM-APP/local_data/
+
+# ─── Secrets ──────────────────────────────────────────
+.env
+.env.local

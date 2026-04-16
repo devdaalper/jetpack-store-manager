@@ -1,0 +1,577 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Comparison operation "\>" between int\<1, max\> and 0 is always true\.$#'
+			identifier: greater.alwaysTrue
+			count: 1
+			path: includes/class-access-manager.php
+
+		-
+			message: '#^Left side of && is always true\.$#'
+			identifier: booleanAnd.leftAlwaysTrue
+			count: 1
+			path: includes/class-jpsm-access-service.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 2
+			path: includes/class-jpsm-admin-views.php
+
+		-
+			message: '#^Call to function is_wp_error\(\) with int\<0, max\> will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 2
+			path: includes/class-jpsm-admin.php
+
+		-
+			message: '#^Constant JPSM_PLUGIN_DIR not found\.$#'
+			identifier: constant.notFound
+			count: 3
+			path: includes/class-jpsm-admin.php
+
+		-
+			message: '#^Constant JPSM_PLUGIN_URL not found\.$#'
+			identifier: constant.notFound
+			count: 3
+			path: includes/class-jpsm-admin.php
+
+		-
+			message: '#^Method JetpackStore\\Admin\:\:verify_access\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: includes/class-jpsm-admin.php
+
+		-
+			message: '#^Instantiated class JetpackStore\\WP_Error not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/class-jpsm-api-contract.php
+
+		-
+			message: '#^Comparison operation "\>\=" between int\<80000, 80599\> and 70300 is always true\.$#'
+			identifier: greaterOrEqual.alwaysTrue
+			count: 1
+			path: includes/class-jpsm-auth.php
+
+		-
+			message: '#^Instantiated class JetpackStore\\WP_Error not found\.$#'
+			identifier: class.notFound
+			count: 2
+			path: includes/class-jpsm-auth.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: includes/class-jpsm-auth.php
+
+		-
+			message: '#^Call to method getMessage\(\) on an unknown class JetpackStore\\Throwable\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/class-jpsm-behavior-service.php
+
+		-
+			message: '#^Caught class JetpackStore\\Throwable not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/class-jpsm-behavior-service.php
+
+		-
+			message: '#^Instantiated class JetpackStore\\WP_Error not found\.$#'
+			identifier: class.notFound
+			count: 5
+			path: includes/class-jpsm-behavior-service.php
+
+		-
+			message: '#^Offset ''downloads'' on array\{folder_path\: non\-empty\-string, downloads\: int\<0, max\>, bytes_authorized\: int\<0, max\>, bytes_observed\: int\<0, max\>, bytes_authorized_available\: true, bytes_observed_available\: true, mom_delta\: int\|null, yoy_delta\: int\|null, \.\.\.\}\|array\{folder_path\: non\-empty\-string, downloads\: int\<0, max\>, bytes_authorized\: null, bytes_observed\: null, bytes_authorized_available\: false, bytes_observed_available\: false, mom_delta\: int\|null, yoy_delta\: int\|null, \.\.\.\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: includes/class-jpsm-behavior-service.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<array\{tier\: int, region\: string, device_class\: string, search_count\: int, download_count\: int\}\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 1
+			path: includes/class-jpsm-behavior-service.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between mixed and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: includes/class-jpsm-behavior-service.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 4
+			path: includes/class-jpsm-behavior-service.php
+
+		-
+			message: '#^Comparison operation "\>" between int\<1, 65535\> and 65535 is always false\.$#'
+			identifier: greater.alwaysFalse
+			count: 1
+			path: includes/class-jpsm-config.php
+
+		-
+			message: '#^Instantiated class JetpackStore\\WP_Error not found\.$#'
+			identifier: class.notFound
+			count: 4
+			path: includes/class-jpsm-config.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\{\}\|array\{log\: array, sales_today\: int, rev_today_mxn\: float, rev_today_usd\: float, rev_month_mxn\: float, rev_month_usd\: float, rev_total_mxn\: float, rev_total_usd\: float, \.\.\.\} will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-jpsm-dashboard.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/class-jpsm-data-layer.php
+
+		-
+			message: '#^Call to method getMessage\(\) on an unknown class JetpackStore\\Throwable\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/class-jpsm-data-layer.php
+
+		-
+			message: '#^Caught class JetpackStore\\Throwable not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/class-jpsm-data-layer.php
+
+		-
+			message: '#^Static method JetpackStore\\Data_Layer\:\:migrate_leads_from_legacy\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: includes/class-jpsm-data-layer.php
+
+		-
+			message: '#^Static method JetpackStore\\Data_Layer\:\:migrate_play_counts_from_legacy\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: includes/class-jpsm-data-layer.php
+
+		-
+			message: '#^Static method JetpackStore\\Data_Layer\:\:migrate_sales_from_legacy\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: includes/class-jpsm-data-layer.php
+
+		-
+			message: '#^Static method JetpackStore\\Data_Layer\:\:migrate_tiers_from_legacy\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: includes/class-jpsm-data-layer.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between string and false will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: includes/class-jpsm-data-layer.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 5
+			path: includes/class-jpsm-data-layer.php
+
+		-
+			message: '#^Instantiated class JetpackStore\\WP_Error not found\.$#'
+			identifier: class.notFound
+			count: 2
+			path: includes/class-jpsm-finance.php
+
+		-
+			message: '#^Access to constant READABLE on an unknown class JetpackStore\\WP_REST_Server\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/class-jpsm-rest.php
+
+		-
+			message: '#^Instantiated class JetpackStore\\WP_REST_Response not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/class-jpsm-rest.php
+
+		-
+			message: '#^Static method JetpackStore\\Sales\:\:verify_access\(\) is unused\.$#'
+			identifier: method.unused
+			count: 1
+			path: includes/class-jpsm-sales.php
+
+		-
+			message: '#^Comparison operation "\<\=" between 0\|1\|2\|3\|4\|5\|6\|7\|8\|9\|10\|11\|12\|13\|14\|15\|16\|17\|18\|19\|20\|21\|22\|23 and 23 is always true\.$#'
+			identifier: smallerOrEqual.alwaysTrue
+			count: 1
+			path: includes/class-jpsm-stats-service.php
+
+		-
+			message: '#^Comparison operation "\<\=" between 1\|2\|3\|4\|5\|6\|7 and 7 is always true\.$#'
+			identifier: smallerOrEqual.alwaysTrue
+			count: 1
+			path: includes/class-jpsm-stats-service.php
+
+		-
+			message: '#^Comparison operation "\<\=" between 1\|2\|3\|4\|5\|6\|7\|8\|9\|10\|11\|12\|13\|14\|15\|16\|17\|18\|19\|20\|21\|22\|23\|24\|25\|26\|27\|28\|29\|30\|31 and 31 is always true\.$#'
+			identifier: smallerOrEqual.alwaysTrue
+			count: 1
+			path: includes/class-jpsm-stats-service.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 0\|1\|2\|3\|4\|5\|6\|7\|8\|9\|10\|11\|12\|13\|14\|15\|16\|17\|18\|19\|20\|21\|22\|23 and 0 is always true\.$#'
+			identifier: greaterOrEqual.alwaysTrue
+			count: 1
+			path: includes/class-jpsm-stats-service.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 1\|2\|3\|4\|5\|6\|7 and 1 is always true\.$#'
+			identifier: greaterOrEqual.alwaysTrue
+			count: 1
+			path: includes/class-jpsm-stats-service.php
+
+		-
+			message: '#^Comparison operation "\>\=" between 1\|2\|3\|4\|5\|6\|7\|8\|9\|10\|11\|12\|13\|14\|15\|16\|17\|18\|19\|20\|21\|22\|23\|24\|25\|26\|27\|28\|29\|30\|31 and 1 is always true\.$#'
+			identifier: greaterOrEqual.alwaysTrue
+			count: 1
+			path: includes/class-jpsm-stats-service.php
+
+		-
+			message: '#^Offset ''count'' on array\{count\: int\<1, max\>, total\: float, mxn\: 0\|float, usd\: 0\|float\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: includes/class-jpsm-stats-service.php
+
+		-
+			message: '#^Offset ''total'' on array\{count\: int\<1, max\>, total\: float, mxn\: 0\|float, usd\: 0\|float\} in isset\(\) always exists and is not nullable\.$#'
+			identifier: isset.offset
+			count: 2
+			path: includes/class-jpsm-stats-service.php
+
+		-
+			message: '#^Result of && is always true\.$#'
+			identifier: booleanAnd.alwaysTrue
+			count: 3
+			path: includes/class-jpsm-stats-service.php
+
+		-
+			message: '#^Constant JPSM_PLUGIN_DIR not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: includes/modules/downloader/analytics.php
+
+		-
+			message: '#^Call to function is_wp_error\(\) with int\<1, max\> will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: includes/modules/downloader/api.php
+
+		-
+			message: '#^Call to static method check_current_session\(\) on an unknown class JPSM_Access_Manager\.$#'
+			identifier: class.notFound
+			count: 2
+			path: includes/modules/downloader/api.php
+
+		-
+			message: '#^Parameter \#3 \$args of function register_setting expects array\{type\?\: string, label\?\: string, description\?\: string, sanitize_callback\?\: callable\(\)\: mixed, show_in_rest\?\: array\|bool, default\?\: mixed\}, ''jdd_sanitize_folder…'' given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/modules/downloader/settings.php
+
+		-
+			message: '#^Call to static method check_current_session\(\) on an unknown class JPSM_Access_Manager\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/modules/downloader/templates/fullscreen.php
+
+		-
+			message: '#^Call to static method set_access_cookie\(\) on an unknown class JPSM_Access_Manager\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/modules/downloader/templates/fullscreen.php
+
+		-
+			message: '#^Call to function is_array\(\) with array will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, int\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Call to function is_array\(\) with non\-empty\-array\<mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Call to function is_array\(\) with non\-empty\-list\<string\|null\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Call to function is_string\(\) with string will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Call to method getMessage\(\) on an unknown class JetpackStore\\MediaVault\\Error\.$#'
+			identifier: class.notFound
+			count: 2
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Call to method getMessage\(\) on an unknown class JetpackStore\\MediaVault\\Exception\.$#'
+			identifier: class.notFound
+			count: 2
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Caught class JetpackStore\\MediaVault\\Error not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Caught class JetpackStore\\MediaVault\\Exception not found\.$#'
+			identifier: class.notFound
+			count: 2
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Constant JPSM_PLUGIN_DIR not found\.$#'
+			identifier: constant.notFound
+			count: 2
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Offset ''bpm'' on array\{bpm\: int, source\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Offset ''primary'' on array\{primary\: int, shadow\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Offset ''shadow'' on array\{primary\: int, shadow\: int\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Offset ''source'' on array\{bpm\: int, source\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Offset 0 on non\-empty\-list\<string\> on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Offset 1 on array\{non\-falsy\-string, non\-falsy\-string&numeric\-string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Offset 1 on array\{non\-falsy\-string, non\-falsy\-string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Result of \|\| is always false\.$#'
+			identifier: booleanOr.alwaysFalse
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between mixed and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between non\-empty\-string and '''' will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between non\-empty\-string and false will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 3
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Ternary operator condition is always true\.$#'
+			identifier: ternary.alwaysTrue
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Variable \$row in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Variable \$words in empty\(\) always exists and is not falsy\.$#'
+			identifier: empty.variable
+			count: 1
+			path: includes/modules/mediavault/class-index-manager.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''JetpackStore\\\\MediaVault\\\\Index_Manager'' and ''has_index_data'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/modules/mediavault/class-nav-order.php
+
+		-
+			message: '#^Constant JPSM_PLUGIN_DIR not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: includes/modules/mediavault/class-nav-order.php
+
+		-
+			message: '#^Parameter \#1 \$array \(list\<\(int\|string\)\>\) of array_values is already a list, call has no effect\.$#'
+			identifier: arrayValues.list
+			count: 2
+			path: includes/modules/mediavault/class-nav-order.php
+
+		-
+			message: '#^Parameter \#3 \$autoload of function update_option expects bool\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/modules/mediavault/class-nav-order.php
+
+		-
+			message: '#^Constant COOKIEPATH not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: includes/modules/mediavault/loader.php
+
+		-
+			message: '#^Access to property \$posts on an unknown class JetpackStore\\MediaVault\\WP_Query\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\{ext\?\: string\|false, type\: string\|false\} will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Call to function method_exists\(\) with ''JetpackStore\\\\MediaVault\\\\Index_Manager'' and ''has_index_data'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Call to method getMessage\(\) on an unknown class JetpackStore\\MediaVault\\Exception\.$#'
+			identifier: class.notFound
+			count: 2
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Call to method getMessage\(\) on an unknown class JetpackStore\\MediaVault\\Throwable\.$#'
+			identifier: class.notFound
+			count: 4
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Caught class JetpackStore\\MediaVault\\Exception not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Caught class JetpackStore\\MediaVault\\Throwable not found\.$#'
+			identifier: class.notFound
+			count: 4
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Constant COOKIEPATH not found\.$#'
+			identifier: constant.notFound
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Constant JPSM_PLUGIN_DIR not found\.$#'
+			identifier: constant.notFound
+			count: 13
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Instantiated class JetpackStore\\MediaVault\\WP_Error not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Instantiated class JetpackStore\\MediaVault\\WP_Query not found\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Method JetpackStore\\MediaVault\\UI\:\:get_cached_folder_structure\(\) has invalid return type JetpackStore\\MediaVault\\WP_Error\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Method JetpackStore\\MediaVault\\UI\:\:track_mobile_notice_event\(\) has invalid return type JetpackStore\\MediaVault\\WP_Error\.$#'
+			identifier: class.notFound
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_attr expects string, int\<0, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Parameter \#1 \$text of function esc_html expects string, int\<1, max\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between non\-empty\-string and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Undefined variable\: \$force_list_view$#'
+			identifier: variable.undefined
+			count: 1
+			path: includes/modules/mediavault/template-vault.php
+
+		-
+			message: '#^Unreachable statement \- code above always terminates\.$#'
+			identifier: deadCode.unreachable
+			count: 1
+			path: jetpack-store-manager.php

@@ -1,0 +1,6 @@
+# Dependencies
+node_modules/
+
+# Build artifacts (regenerated via `npm run build`)
+*.min.js
+*.min.css
