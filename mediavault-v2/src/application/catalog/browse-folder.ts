@@ -67,10 +67,17 @@ export async function browseFolder(
 
   const activeVersion = Number(configRow?.value ?? 1);
 
+  // Junction auto-drilling: if browsing root and there's a single wrapper folder,
+  // drill through it automatically (up to 10 levels) to find the natural junction.
+  let effectivePath = folderPath;
+  if (folderPath === "" && !rootPrefix) {
+    effectivePath = await detectJunction(supabase, activeVersion);
+  }
+
   // Normalize folder path
-  const normalizedPath = folderPath.endsWith("/") || folderPath === ""
-    ? folderPath
-    : `${folderPath}/`;
+  const normalizedPath = effectivePath.endsWith("/") || effectivePath === ""
+    ? effectivePath
+    : `${effectivePath}/`;
   const fullPrefix = rootPrefix ? `${rootPrefix}${normalizedPath}` : normalizedPath;
 
   // Get folder permissions for access control
@@ -185,4 +192,53 @@ function formatFileSize(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   const size = bytes / Math.pow(1024, i);
   return `${size.toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
+}
+
+/**
+ * Junction auto-drilling: finds the natural display level by
+ * drilling through single-child wrapper folders (up to 10 levels).
+ *
+ * Example: If the bucket has "Full Pack [JetPack Store]/" as the only
+ * top-level folder, this drills into it automatically so the user
+ * sees the content categories directly.
+ */
+async function detectJunction(
+  supabase: ReturnType<typeof createServiceClient>,
+  activeVersion: number,
+  maxDepth = 10,
+): Promise<string> {
+  let currentPrefix = "";
+
+  for (let depth = 0; depth < maxDepth; depth++) {
+    // Get distinct immediate subfolders at this level
+    const { data: rows } = await supabase
+      .from("file_index")
+      .select("folder")
+      .eq("version", activeVersion)
+      .eq("depth", depth + 1)
+      .limit(100);
+
+    if (!rows || rows.length === 0) break;
+
+    // Get unique folders at this depth that are children of currentPrefix
+    const children = new Set<string>();
+    for (const row of rows) {
+      const folder = row.folder;
+      if (currentPrefix && !folder.startsWith(currentPrefix)) continue;
+      // Extract the immediate child segment
+      const relative = folder.slice(currentPrefix.length);
+      const firstSlash = relative.indexOf("/");
+      if (firstSlash > 0) {
+        children.add(currentPrefix + relative.slice(0, firstSlash + 1));
+      }
+    }
+
+    // If more than 1 child or 0 children, this is the junction
+    if (children.size !== 1) break;
+
+    // Single child — drill into it
+    currentPrefix = Array.from(children)[0] ?? "";
+  }
+
+  return currentPrefix;
 }

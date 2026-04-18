@@ -21,7 +21,14 @@ export interface SearchResult {
   score: number;
 }
 
+export interface SearchFolder {
+  name: string;
+  path: string;
+  fullPath: string;
+}
+
 export interface SearchResponse {
+  folders: SearchFolder[];
   items: SearchResult[];
   total: number;
   query: string;
@@ -59,8 +66,25 @@ export async function searchCatalog(
   const tokens = normalizedQuery.split(/\s+/).filter((t) => t.length > 0);
 
   if (tokens.length === 0) {
-    return { items: [], total: 0, query };
+    return { folders: [], items: [], total: 0, query };
   }
+
+  // Search folders: find distinct folders matching the query
+  const { data: folderRows } = await supabase
+    .from("file_index")
+    .select("folder")
+    .eq("version", activeVersion)
+    .ilike("folder_norm", `%${normalizedQuery}%`)
+    .limit(500);
+
+  const folderSet = new Map<string, SearchFolder>();
+  for (const row of folderRows ?? []) {
+    const folder = row.folder;
+    if (folderSet.has(folder)) continue;
+    const name = folder.replace(/\/$/, "").split("/").pop() ?? folder;
+    folderSet.set(folder, { name, path: folder, fullPath: folder });
+  }
+  const folders = Array.from(folderSet.values()).slice(0, 20);
 
   // Build query — search across name_norm and folder_norm
   // Use ilike for each token (all must match)
@@ -114,6 +138,7 @@ export async function searchCatalog(
   items.sort((a, b) => b.score - a.score || a.name.localeCompare(b.name));
 
   return {
+    folders,
     items,
     total: count ?? items.length,
     query,
