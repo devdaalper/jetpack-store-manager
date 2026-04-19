@@ -39,14 +39,19 @@ export function VaultContent({
     localStorage.setItem("mv_view_preference", v);
   }
 
-  // Auto-select best view: grid if mostly folders, list if mostly files
+  // Auto-select best view based on content + screen size
   useEffect(() => {
     const saved = localStorage.getItem("mv_view_preference");
-    if (!saved) {
-      // Auto: if only files, default to list
+    const isMobile = window.innerWidth < 768;
+
+    if (!saved || isMobile) {
+      // Mobile: always force list for files (cards too tall)
+      // Desktop: auto-select based on content
       if (folders.length === 0 && files.length > 0) {
         setView("list");
-      } else {
+      } else if (isMobile && files.length > 0 && folders.length === 0) {
+        setView("list");
+      } else if (!saved) {
         setView("grid");
       }
     }
@@ -76,7 +81,7 @@ export function VaultContent({
 
         {/* Header */}
         <div className="mb-5">
-          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-neutral-900 tracking-tight">
             {currentName}
           </h1>
           <p className="text-sm text-neutral-400 mt-1">{summary}</p>

@@ -122,7 +122,7 @@ function SidebarNav({
       {/* Home */}
       <Link
         href="/vault"
-        className={`flex items-center gap-2 mx-2 px-2 py-2 rounded-lg text-sm transition ${
+        className={`flex items-center gap-2 mx-2 px-2 py-3 rounded-lg text-sm transition ${
           !currentFolder
             ? "bg-orange-50 text-orange-700 font-medium"
             : "text-neutral-600 hover:bg-neutral-100"
@@ -143,7 +143,7 @@ function SidebarNav({
           <Link
             key={folder.path}
             href={`/vault?path=${encodeURIComponent(folder.path)}`}
-            className={`flex items-center gap-2 mx-2 px-2 py-2 rounded-lg text-sm transition ${
+            className={`flex items-center gap-2 mx-2 px-2 py-3 rounded-lg text-sm transition ${
               isActive
                 ? "bg-orange-50 text-orange-700 font-medium"
                 : "text-neutral-600 hover:bg-neutral-100"

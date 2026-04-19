@@ -134,12 +134,12 @@ export function PlayerBar({ track, remainingPlays, onClose, whatsappNumber }: Pl
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-3 px-4 h-14 md:h-16">
-        {/* Play/Pause */}
+      <div className="flex items-center gap-2 md:gap-3 px-3 md:px-4 h-14 md:h-16">
+        {/* Play/Pause — 44px touch target */}
         <button
           onClick={togglePlay}
           disabled={limitReached}
-          className="p-2 rounded-full hover:bg-white/10 transition disabled:opacity-40"
+          className="p-2.5 rounded-full hover:bg-white/10 active:bg-white/20 transition disabled:opacity-40"
         >
           {isPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
         </button>
@@ -148,7 +148,7 @@ export function PlayerBar({ track, remainingPlays, onClose, whatsappNumber }: Pl
         <div className="flex-1 min-w-0">
           {limitReached ? (
             <div className="flex items-center gap-2">
-              <p className="text-sm text-orange-400 font-medium truncate">
+              <p className="text-xs sm:text-sm text-orange-400 font-medium truncate">
                 Preview completo
               </p>
               {whatsappUrl && (
@@ -156,35 +156,37 @@ export function PlayerBar({ track, remainingPlays, onClose, whatsappNumber }: Pl
                   href={whatsappUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1 px-3 py-1 bg-green-600 hover:bg-green-700 rounded-full text-xs font-medium transition whitespace-nowrap"
+                  className="flex items-center gap-1 px-3 py-1.5 bg-green-600 hover:bg-green-700 active:bg-green-800 rounded-full text-xs font-medium transition whitespace-nowrap"
                 >
                   <MessageCircle className="w-3.5 h-3.5" />
-                  Acceso completo
+                  <span className="hidden sm:inline">Acceso completo</span>
+                  <span className="sm:hidden">Más</span>
                 </a>
               )}
             </div>
           ) : (
-            <p className="text-sm truncate">{track.name}</p>
+            <p className="text-xs sm:text-sm truncate">{track.name}</p>
           )}
         </div>
 
-        {/* Time */}
-        <span className="text-xs text-neutral-400 tabular-nums hidden sm:block">
-          {formatTime(currentTime)} / {formatTime(Math.min(duration, PREVIEW_DURATION_LIMIT_SECONDS))}
+        {/* Time — always visible, compact on mobile */}
+        <span className="text-xs text-neutral-400 tabular-nums flex-shrink-0">
+          {formatTime(currentTime)}
+          <span className="hidden sm:inline"> / {formatTime(Math.min(duration, PREVIEW_DURATION_LIMIT_SECONDS))}</span>
         </span>
 
-        {/* Volume */}
+        {/* Volume — hidden on mobile (system volume handles it) */}
         <button
           onClick={toggleMute}
-          className="p-2 rounded-full hover:bg-white/10 transition hidden sm:block"
+          className="p-2.5 rounded-full hover:bg-white/10 active:bg-white/20 transition hidden sm:block"
         >
           {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
         </button>
 
-        {/* Close */}
+        {/* Close — 44px touch target */}
         <button
           onClick={onClose}
-          className="p-2 rounded-full hover:bg-white/10 transition"
+          className="p-2.5 rounded-full hover:bg-white/10 active:bg-white/20 transition"
         >
           <X className="w-4 h-4" />
         </button>

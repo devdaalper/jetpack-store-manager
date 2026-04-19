@@ -12,7 +12,7 @@ export function FolderCard({ folder }: FolderCardProps) {
   return (
     <Link
       href={`/vault?path=${encodeURIComponent(folder.path)}`}
-      className="group block bg-white rounded-xl border border-neutral-100 hover:border-neutral-200 hover:shadow-md transition-all duration-200 hover:-translate-y-0.5 overflow-hidden"
+      className="group block bg-white rounded-xl border border-neutral-100 hover:border-neutral-200 hover:shadow-md active:shadow-sm active:scale-[0.98] transition-all duration-200 hover:-translate-y-0.5 overflow-hidden"
     >
       {/* Cover */}
       <div className="aspect-square bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center">

@@ -40,6 +40,16 @@ export function VaultShell({
     if (saved === "true") setSidebarCollapsed(true);
   }, []);
 
+  // Scroll lock when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
+
   const toggleSidebar = useCallback(() => {
     setSidebarCollapsed((prev) => {
       localStorage.setItem("mv_sidebar_collapsed", String(!prev));
@@ -122,7 +132,7 @@ export function VaultShell({
       {/* Mobile hamburger */}
       <button
         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-        className="md:hidden fixed top-3 left-3 z-50 p-2 bg-white rounded-lg shadow-md border border-neutral-200"
+        className="md:hidden fixed top-2 left-2 z-50 p-2.5 bg-white rounded-xl shadow-md border border-neutral-200"
       >
         {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>

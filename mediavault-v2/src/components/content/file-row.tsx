@@ -21,7 +21,7 @@ export function FileRow({ file, onPlay, onDownload }: FileRowProps) {
   const iconColor = isMedia ? "text-neutral-300" : "text-neutral-500";
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 transition group border-b border-neutral-100 last:border-0">
+    <div className="flex items-center gap-3 px-3 md:px-4 py-3 hover:bg-neutral-50 active:bg-neutral-100 transition group border-b border-neutral-100 last:border-0">
       {/* Icon */}
       <div className={`w-10 h-10 rounded-lg ${iconBg} flex items-center justify-center flex-shrink-0`}>
         <Icon className={`w-5 h-5 ${iconColor}`} />
@@ -35,12 +35,12 @@ export function FileRow({ file, onPlay, onDownload }: FileRowProps) {
         </p>
       </div>
 
-      {/* Actions */}
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+      {/* Actions — always visible on mobile, hover on desktop */}
+      <div className="flex items-center gap-1.5 md:opacity-0 md:group-hover:opacity-100 transition flex-shrink-0">
         {isMedia && (
           <button
             onClick={() => onPlay?.(file)}
-            className="p-2 rounded-full bg-orange-500 text-white hover:bg-orange-600 transition"
+            className="p-2.5 rounded-full bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 transition"
             title="Reproducir"
           >
             <Play className="w-4 h-4" fill="currentColor" />
@@ -48,9 +48,9 @@ export function FileRow({ file, onPlay, onDownload }: FileRowProps) {
         )}
         <button
           onClick={() => onDownload?.(file)}
-          className={`p-2 rounded-full transition ${
+          className={`p-2.5 rounded-full transition ${
             file.canDownload
-              ? "text-neutral-600 hover:bg-neutral-200"
+              ? "text-neutral-600 hover:bg-neutral-200 active:bg-neutral-300"
               : "text-neutral-300 cursor-default"
           }`}
           title={file.canDownload ? "Descargar" : "Requiere plan"}
