@@ -1,7 +1,9 @@
 /**
  * Auth helpers — server-side utilities for getting user info.
+ * Uses React.cache() to deduplicate auth calls within the same request.
  */
 
+import { cache } from "react";
 import { createClient } from "@/infrastructure/supabase/server";
 import type { TierValue } from "@/domain/schemas";
 
@@ -14,9 +16,9 @@ export interface SessionUser {
 
 /**
  * Get the current authenticated user with their profile.
- * Returns null if not authenticated.
+ * Deduplicated per-request via React.cache() — safe to call multiple times.
  */
-export async function getSessionUser(): Promise<SessionUser | null> {
+export const getSessionUser = cache(async (): Promise<SessionUser | null> => {
   const supabase = await createClient();
 
   const {
@@ -38,7 +40,7 @@ export async function getSessionUser(): Promise<SessionUser | null> {
     tier: (profile?.tier ?? 0) as TierValue,
     isAdmin: profile?.is_admin ?? false,
   };
-}
+});
 
 /**
  * Require authentication — throws redirect if not logged in.

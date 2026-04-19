@@ -1,7 +1,6 @@
 /**
- * Vault Layout — Sidebar + Toolbar + Player Bar + Content.
+ * Vault Layout — Optimized: 2 queries total (batch config + auth).
  * Server Component: fetches precomputed sidebar data and user profile.
- * Sidebar folders are read from app_config (precomputed during sync).
  */
 
 import { redirect } from "next/navigation";
@@ -19,29 +18,27 @@ export default async function VaultLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Auth (deduplicated via React.cache — free if page also calls it)
   const user = await getSessionUser();
   if (!user) redirect("/login?redirect=/vault");
 
+  // Single batch query for all config values
   const supabase = createServiceClient();
-
-  // Read precomputed sidebar folders (instant — no index scan needed)
-  const { data: sidebarRow } = await supabase
+  const { data: configs } = await supabase
     .from("app_config")
-    .select("value")
-    .eq("key", "sidebar_folders")
-    .single();
+    .select("key, value")
+    .in("key", ["sidebar_folders", "whatsapp_number"]);
 
-  const sidebarConfig = sidebarRow?.value as SidebarConfig | null;
+  const configMap: Record<string, unknown> = {};
+  for (const row of configs ?? []) {
+    configMap[row.key] = row.value;
+  }
+
+  const sidebarConfig = configMap["sidebar_folders"] as SidebarConfig | null;
   const sidebarFolders = sidebarConfig?.folders ?? [];
 
-  // Get WhatsApp number
-  const { data: waRow } = await supabase
-    .from("app_config")
-    .select("value")
-    .eq("key", "whatsapp_number")
-    .single();
-
-  const whatsappNumber = waRow?.value ? String(waRow.value).replace(/"/g, "") : undefined;
+  const rawWa = configMap["whatsapp_number"];
+  const whatsappNumber = rawWa ? String(rawWa).replace(/"/g, "") : undefined;
 
   return (
     <VaultShell

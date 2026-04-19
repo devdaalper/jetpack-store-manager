@@ -1,10 +1,12 @@
 /**
- * Browse Folder — Use Case
+ * Browse Folder — Use Case (Optimized)
  *
- * Lists the contents of a folder from the file index,
- * applying access control based on user tier.
+ * Uses precomputed folder_tree from app_config for instant subfolder lookup.
+ * Total queries per browse: 2 (config batch + files).
+ * Previous version: 10-60 queries, 5-10 seconds.
  */
 
+import { cache } from "react";
 import { createServiceClient } from "@/infrastructure/supabase/server";
 import {
   canAccessFolder,
@@ -42,67 +44,84 @@ export interface BrowseResult {
   totalFiles: number;
 }
 
+// ─── Cached config loader (deduplicates within same request) ────────
+
+interface AppConfigs {
+  activeVersion: number;
+  junction: string;
+  folderTree: Record<string, string[]>;
+  permissionsMap: Record<string, TierValue[]>;
+}
+
+const getAppConfigs = cache(async (): Promise<AppConfigs> => {
+  const supabase = createServiceClient();
+
+  // Single batch query for ALL config + permissions (parallel)
+  const [configRes, permRes] = await Promise.all([
+    supabase
+      .from("app_config")
+      .select("key, value")
+      .in("key", ["active_index_version", "sidebar_folders", "folder_tree"]),
+    supabase
+      .from("folder_permissions")
+      .select("folder_path, allowed_tiers"),
+  ]);
+
+  const configs: Record<string, unknown> = {};
+  for (const row of configRes.data ?? []) {
+    configs[row.key] = row.value;
+  }
+
+  const permissionsMap: Record<string, TierValue[]> = {};
+  for (const row of permRes.data ?? []) {
+    permissionsMap[row.folder_path] = (row.allowed_tiers ?? []) as TierValue[];
+  }
+
+  const sidebarConfig = configs["sidebar_folders"] as { junction?: string } | undefined;
+
+  return {
+    activeVersion: Number(configs["active_index_version"] ?? 1),
+    junction: sidebarConfig?.junction ?? "",
+    folderTree: (configs["folder_tree"] ?? {}) as Record<string, string[]>,
+    permissionsMap,
+  };
+});
+
 // ─── Use Case ───────────────────────────────────────────────────────
 
 export async function browseFolder(
   folderPath: string,
   userTier: TierValue,
 ): Promise<BrowseResult> {
-  const supabase = createServiceClient();
+  const { activeVersion, junction, folderTree, permissionsMap } = await getAppConfigs();
 
-  const { data: configRow } = await supabase
-    .from("app_config")
-    .select("value")
-    .eq("key", "active_index_version")
-    .single();
-
-  const activeVersion = Number(configRow?.value ?? 1);
-
-  // Junction: read precomputed junction from app_config
-  let effectivePath = folderPath;
-  if (folderPath === "") {
-    const { data: junctionRow } = await supabase
-      .from("app_config")
-      .select("value")
-      .eq("key", "sidebar_folders")
-      .single();
-    const junction = (junctionRow?.value as { junction?: string } | null)?.junction ?? "";
-    effectivePath = junction;
-  }
+  // Junction: when browsing root, use the precomputed junction path
+  const effectivePath = folderPath === "" ? junction : folderPath;
 
   const normalizedPath = effectivePath.endsWith("/") || effectivePath === ""
     ? effectivePath
     : `${effectivePath}/`;
 
-  // Get folder permissions
-  const { data: permRows } = await supabase
-    .from("folder_permissions")
-    .select("folder_path, allowed_tiers");
-
-  const permissionsMap: Record<string, TierValue[]> = {};
-  for (const row of permRows ?? []) {
-    permissionsMap[row.folder_path] = (row.allowed_tiers ?? []) as TierValue[];
-  }
-
-  // Find immediate subfolders using distributed sampling
-  const subfolders = await findSubfolders(supabase, activeVersion, normalizedPath);
+  // Instant subfolder lookup from precomputed tree (0 queries)
+  const childNames = folderTree[normalizedPath] ?? [];
 
   // Build folder list with access control
   const folders: BrowseFolder[] = [];
-  for (const subfolder of subfolders.sort()) {
-    const subPath = `${normalizedPath}${subfolder}/`;
+  for (const name of childNames) {
+    const subPath = `${normalizedPath}${name}/`;
     const allowedTiers = resolveAllowedTiers(subPath, permissionsMap);
 
     if (!canAccessFolder(userTier, allowedTiers)) continue;
 
     folders.push({
-      name: subfolder,
+      name,
       path: subPath,
       canDownload: canDownload(userTier, allowedTiers),
     });
   }
 
-  // Query files directly in this folder (not subfolders)
+  // Query files directly in this folder (1 query, indexed)
+  const supabase = createServiceClient();
   const { data: fileRows, count } = await supabase
     .from("file_index")
     .select("name, path, size, extension, media_kind, last_modified", {
@@ -142,63 +161,6 @@ export async function browseFolder(
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
-
-/**
- * Find immediate subfolders of a given prefix using cursor-based scanning.
- * Ordered by folder name so we can efficiently discover all unique children.
- */
-async function findSubfolders(
-  supabase: ReturnType<typeof createServiceClient>,
-  activeVersion: number,
-  prefix: string,
-): Promise<string[]> {
-  const children = new Set<string>();
-  let lastFolder = prefix;
-  let batchCount = 0;
-  const maxBatches = 50; // Safety limit
-
-  while (batchCount < maxBatches) {
-    const { data } = await supabase
-      .from("file_index")
-      .select("folder")
-      .eq("version", activeVersion)
-      .like("folder", `${prefix}%`)
-      .gt("folder", lastFolder)
-      .order("folder", { ascending: true })
-      .limit(500);
-
-    if (!data || data.length === 0) break;
-
-    for (const r of data) {
-      const relative = r.folder.slice(prefix.length);
-      const slash = relative.indexOf("/");
-      if (slash > 0) {
-        const child = relative.slice(0, slash);
-        if (!children.has(child)) {
-          children.add(child);
-          // Skip ahead past this child's content
-          lastFolder = `${prefix}${child}/\uffff`;
-          break; // Restart the query to jump to next child
-        }
-      }
-    }
-
-    // If we didn't find a new child in this batch, advance past it
-    if (data.length > 0) {
-      const lastRow = data[data.length - 1];
-      if (lastFolder < (lastRow?.folder ?? "")) {
-        lastFolder = lastRow?.folder ?? lastFolder;
-      }
-    }
-
-    batchCount++;
-  }
-
-  return [...children];
-}
-
-// Junction detection is now precomputed and stored in app_config.sidebar_folders.
-// See sync-index.ts for how it's computed during B2 sync.
 
 function buildBreadcrumbs(
   folderPath: string,
