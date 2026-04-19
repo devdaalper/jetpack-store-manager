@@ -141,13 +141,14 @@ export function VaultShell({
       {mobileMenuOpen && (
         <div className="md:hidden fixed inset-0 z-40">
           <div className="absolute inset-0 bg-black/30" onClick={() => setMobileMenuOpen(false)} />
-          <div className="relative w-60 h-full">
+          <div className="relative w-60 h-full bg-white">
             <Sidebar
               folders={folders}
               userEmail={userEmail}
               userTier={userTier}
               isCollapsed={false}
               onToggleCollapse={() => setMobileMenuOpen(false)}
+              isMobileDrawer={true}
             />
           </div>
         </div>

@@ -25,6 +25,7 @@ interface SidebarProps {
   userTier: TierValue;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  isMobileDrawer?: boolean | undefined;
 }
 
 export function Sidebar({
@@ -33,10 +34,11 @@ export function Sidebar({
   userTier,
   isCollapsed,
   onToggleCollapse,
+  isMobileDrawer = false,
 }: SidebarProps) {
   return (
     <aside
-      className={`hidden md:flex flex-col border-r border-neutral-200 bg-white transition-all duration-200 ${
+      className={`${isMobileDrawer ? "flex" : "hidden md:flex"} flex-col border-r border-neutral-200 bg-white transition-all duration-200 ${
         isCollapsed ? "w-14" : "w-60"
       }`}
     >
