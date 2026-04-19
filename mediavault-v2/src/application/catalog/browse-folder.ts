@@ -44,21 +44,12 @@ export interface BrowseResult {
 
 // ─── Use Case ───────────────────────────────────────────────────────
 
-/**
- * Browse the contents of a folder.
- *
- * @param folderPath - Folder to browse (empty string = root)
- * @param userTier - Current user's tier for access control
- * @param rootPrefix - Junction folder / root prefix configured in settings
- */
 export async function browseFolder(
   folderPath: string,
   userTier: TierValue,
-  rootPrefix = "",
 ): Promise<BrowseResult> {
   const supabase = createServiceClient();
 
-  // Get active index version
   const { data: configRow } = await supabase
     .from("app_config")
     .select("value")
@@ -67,20 +58,17 @@ export async function browseFolder(
 
   const activeVersion = Number(configRow?.value ?? 1);
 
-  // Junction auto-drilling: if browsing root and there's a single wrapper folder,
-  // drill through it automatically (up to 10 levels) to find the natural junction.
+  // Junction auto-drilling for root
   let effectivePath = folderPath;
-  if (folderPath === "" && !rootPrefix) {
+  if (folderPath === "") {
     effectivePath = await detectJunction(supabase, activeVersion);
   }
 
-  // Normalize folder path
   const normalizedPath = effectivePath.endsWith("/") || effectivePath === ""
     ? effectivePath
     : `${effectivePath}/`;
-  const fullPrefix = rootPrefix ? `${rootPrefix}${normalizedPath}` : normalizedPath;
 
-  // Get folder permissions for access control
+  // Get folder permissions
   const { data: permRows } = await supabase
     .from("folder_permissions")
     .select("folder_path, allowed_tiers");
@@ -90,52 +78,36 @@ export async function browseFolder(
     permissionsMap[row.folder_path] = (row.allowed_tiers ?? []) as TierValue[];
   }
 
-  // Query subfolders: distinct folder values one level deeper
-  const { data: folderRows } = await supabase
-    .from("file_index")
-    .select("folder")
-    .eq("version", activeVersion)
-    .like("folder", `${fullPrefix}%`)
-    .order("folder");
-
-  // Extract unique immediate subfolders
-  const subfolderSet = new Set<string>();
-  for (const row of folderRows ?? []) {
-    const relative = row.folder.slice(fullPrefix.length);
-    const firstSlash = relative.indexOf("/");
-    if (firstSlash > 0) {
-      subfolderSet.add(relative.slice(0, firstSlash + 1));
-    }
-  }
+  // Find immediate subfolders using distributed sampling
+  const subfolders = await findSubfolders(supabase, activeVersion, normalizedPath);
 
   // Build folder list with access control
   const folders: BrowseFolder[] = [];
-  for (const subfolder of Array.from(subfolderSet).sort()) {
-    const subPath = `${normalizedPath}${subfolder}`;
-    const fullSubPath = `${fullPrefix}${subfolder}`;
-    const allowedTiers = resolveAllowedTiers(fullSubPath, permissionsMap);
+  for (const subfolder of subfolders.sort()) {
+    const subPath = `${normalizedPath}${subfolder}/`;
+    const allowedTiers = resolveAllowedTiers(subPath, permissionsMap);
 
-    // Only show folders the user can access
     if (!canAccessFolder(userTier, allowedTiers)) continue;
 
     folders.push({
-      name: subfolder.replace(/\/$/, ""),
+      name: subfolder,
       path: subPath,
       canDownload: canDownload(userTier, allowedTiers),
     });
   }
 
-  // Query files in this exact folder
+  // Query files directly in this folder (not subfolders)
   const { data: fileRows, count } = await supabase
     .from("file_index")
     .select("name, path, size, extension, media_kind, last_modified", {
       count: "exact",
     })
     .eq("version", activeVersion)
-    .eq("folder", fullPrefix)
-    .order("name");
+    .eq("folder", normalizedPath)
+    .order("name")
+    .limit(500);
 
-  const allowedTiers = resolveAllowedTiers(fullPrefix, permissionsMap);
+  const allowedTiers = resolveAllowedTiers(normalizedPath, permissionsMap);
   const userCanDownload = canDownload(userTier, allowedTiers);
 
   const files: BrowseFile[] = (fileRows ?? []).map((row) => {
@@ -152,7 +124,6 @@ export async function browseFolder(
     };
   });
 
-  // Build breadcrumbs
   const breadcrumbs = buildBreadcrumbs(normalizedPath);
 
   return {
@@ -165,6 +136,132 @@ export async function browseFolder(
 }
 
 // ─── Helpers ────────────────────────────────────────────────────────
+
+/**
+ * Find immediate subfolders of a given prefix by sampling the index.
+ * More efficient than scanning all 291K rows.
+ */
+async function findSubfolders(
+  supabase: ReturnType<typeof createServiceClient>,
+  activeVersion: number,
+  prefix: string,
+): Promise<string[]> {
+  // Get a sample of folders under this prefix
+  const { data, count: totalUnder } = await supabase
+    .from("file_index")
+    .select("folder", { count: "exact" })
+    .eq("version", activeVersion)
+    .like("folder", `${prefix}%`)
+    .neq("folder", prefix)
+    .limit(2000);
+
+  const total = totalUnder ?? 0;
+  const children = new Set<string>();
+
+  // Extract immediate children from first batch
+  for (const r of data ?? []) {
+    const relative = r.folder.slice(prefix.length);
+    const slash = relative.indexOf("/");
+    if (slash > 0) {
+      children.add(relative.slice(0, slash));
+    }
+  }
+
+  // If there are more rows and we might be missing children, sample more
+  if (total > 2000 && children.size < 20) {
+    const batchSize = 2000;
+    for (let offset = 2000; offset < Math.min(total, 20000); offset += batchSize) {
+      const { data: more } = await supabase
+        .from("file_index")
+        .select("folder")
+        .eq("version", activeVersion)
+        .like("folder", `${prefix}%`)
+        .neq("folder", prefix)
+        .range(offset, offset + batchSize - 1);
+
+      for (const r of more ?? []) {
+        const relative = r.folder.slice(prefix.length);
+        const slash = relative.indexOf("/");
+        if (slash > 0) {
+          children.add(relative.slice(0, slash));
+        }
+      }
+
+      // Early exit if we've found enough unique children
+      if (children.size >= 50) break;
+    }
+  }
+
+  return [...children];
+}
+
+/**
+ * Detect junction: find the common prefix wrapper folder.
+ * Uses sampling to efficiently find the natural display root.
+ */
+async function detectJunction(
+  supabase: ReturnType<typeof createServiceClient>,
+  activeVersion: number,
+): Promise<string> {
+  // Get a diverse sample of folders
+  const { count: total } = await supabase
+    .from("file_index")
+    .select("id", { count: "exact", head: true })
+    .eq("version", activeVersion);
+
+  if (!total || total === 0) return "";
+
+  const folders = new Set<string>();
+  const sampleSize = 500;
+  const numSamples = Math.min(5, Math.ceil(total / sampleSize));
+
+  for (let i = 0; i < numSamples; i++) {
+    const offset = Math.floor((i / numSamples) * total);
+    const { data } = await supabase
+      .from("file_index")
+      .select("folder")
+      .eq("version", activeVersion)
+      .range(offset, offset + sampleSize - 1);
+
+    for (const r of data ?? []) {
+      folders.add(r.folder);
+    }
+  }
+
+  const folderList = [...folders];
+  if (folderList.length === 0) return "";
+
+  // Find common prefix
+  const first = folderList[0] ?? "";
+  let prefix = "";
+  for (let i = 0; i < first.length; i++) {
+    const char = first[i];
+    if (folderList.every((p) => p[i] === char)) {
+      prefix += char;
+    } else {
+      break;
+    }
+  }
+
+  // Trim to last complete folder segment
+  const lastSlash = prefix.lastIndexOf("/");
+  if (lastSlash > 0) {
+    prefix = prefix.slice(0, lastSlash + 1);
+  } else {
+    prefix = "";
+  }
+
+  // Now check if there's only one child at this level — if so, drill deeper
+  if (prefix) {
+    const children = await findSubfolders(supabase, activeVersion, prefix);
+    if (children.length === 1 && children[0]) {
+      // Single child — drill into it
+      return `${prefix}${children[0]}/`;
+    }
+  }
+
+  return prefix;
+}
 
 function buildBreadcrumbs(
   folderPath: string,
@@ -192,53 +289,4 @@ function formatFileSize(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
   const size = bytes / Math.pow(1024, i);
   return `${size.toFixed(i > 0 ? 1 : 0)} ${units[i]}`;
-}
-
-/**
- * Junction auto-drilling: finds the natural display level by
- * drilling through single-child wrapper folders (up to 10 levels).
- *
- * Example: If the bucket has "Full Pack [JetPack Store]/" as the only
- * top-level folder, this drills into it automatically so the user
- * sees the content categories directly.
- */
-async function detectJunction(
-  supabase: ReturnType<typeof createServiceClient>,
-  activeVersion: number,
-  maxDepth = 10,
-): Promise<string> {
-  let currentPrefix = "";
-
-  for (let depth = 0; depth < maxDepth; depth++) {
-    // Get distinct immediate subfolders at this level
-    const { data: rows } = await supabase
-      .from("file_index")
-      .select("folder")
-      .eq("version", activeVersion)
-      .eq("depth", depth + 1)
-      .limit(100);
-
-    if (!rows || rows.length === 0) break;
-
-    // Get unique folders at this depth that are children of currentPrefix
-    const children = new Set<string>();
-    for (const row of rows) {
-      const folder = row.folder;
-      if (currentPrefix && !folder.startsWith(currentPrefix)) continue;
-      // Extract the immediate child segment
-      const relative = folder.slice(currentPrefix.length);
-      const firstSlash = relative.indexOf("/");
-      if (firstSlash > 0) {
-        children.add(currentPrefix + relative.slice(0, firstSlash + 1));
-      }
-    }
-
-    // If more than 1 child or 0 children, this is the junction
-    if (children.size !== 1) break;
-
-    // Single child — drill into it
-    currentPrefix = Array.from(children)[0] ?? "";
-  }
-
-  return currentPrefix;
 }
