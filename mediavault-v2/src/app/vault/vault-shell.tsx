@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { PlayerBar, type PlayerTrack } from "@/components/layout/player-bar";
 import { UpgradeSheet } from "@/components/access/upgrade-sheet";
+import { SizeWarning } from "@/components/access/size-warning";
 import { VaultActionsProvider } from "@/hooks/useVaultActions";
 import { useDownloadManager } from "@/hooks/useDownloadManager";
 import { DownloadProgress } from "@/components/vault/download-progress";
@@ -34,11 +35,21 @@ export function VaultShell({
   const [remainingPlays, setRemainingPlays] = useState(-1);
 
   // Download manager
-  const { jobs, downloadFile: dmDownloadFile, downloadFolder: dmDownloadFolder, cancelJob, dismissJob } = useDownloadManager();
+  const { jobs, downloadFile: dmDownloadFile, downloadFolder: dmDownloadFolder, pauseJob, resumeJob, cancelJob, dismissJob } = useDownloadManager();
 
   // Upgrade sheet state
   const [upgradeOpen, setUpgradeOpen] = useState(false);
   const [upgradeReason, setUpgradeReason] = useState<"download" | "play_limit" | "preview_limit">("download");
+
+  // Size warning state
+  const [sizeWarningOpen, setSizeWarningOpen] = useState(false);
+  const [sizeWarningData, setSizeWarningData] = useState<{
+    path: string;
+    name: string;
+    totalSize: string;
+    totalFiles: number;
+    totalSizeBytes: number;
+  } | null>(null);
 
   // Persist sidebar preference
   useEffect(() => {
@@ -133,7 +144,7 @@ export function VaultShell({
     }
   }, [userTier]);
 
-  // Download folder handler
+  // Download folder handler — fetches size first, shows warning
   const handleDownloadFolder = useCallback(async (path: string, name: string) => {
     if (userTier === 0) {
       setUpgradeReason("download");
@@ -147,8 +158,38 @@ export function VaultShell({
       return;
     }
 
-    dmDownloadFolder(path, name);
+    // Fetch folder size and show confirmation
+    try {
+      const res = await fetch(`/api/catalog/folder-size?path=${encodeURIComponent(path)}`);
+      const data = await res.json();
+
+      if (data.ok) {
+        setSizeWarningData({
+          path,
+          name,
+          totalSize: data.data.totalSizeFmt,
+          totalFiles: data.data.totalFiles,
+          totalSizeBytes: data.data.totalSize,
+        });
+        setSizeWarningOpen(true);
+      } else {
+        // If size check fails, proceed anyway
+        dmDownloadFolder(path, name);
+      }
+    } catch {
+      // If size check fails, proceed anyway
+      dmDownloadFolder(path, name);
+    }
   }, [userTier, dmDownloadFolder]);
+
+  // Confirmed download after size warning
+  const handleConfirmFolderDownload = useCallback(() => {
+    if (sizeWarningData) {
+      setSizeWarningOpen(false);
+      dmDownloadFolder(sizeWarningData.path, sizeWarningData.name);
+      setSizeWarningData(null);
+    }
+  }, [sizeWarningData, dmDownloadFolder]);
 
   return (
     <div className="flex min-h-screen bg-neutral-50">
@@ -204,6 +245,8 @@ export function VaultShell({
       {/* Download progress panel */}
       <DownloadProgress
         jobs={jobs}
+        onPause={pauseJob}
+        onResume={resumeJob}
         onCancel={cancelJob}
         onDismiss={dismissJob}
       />
@@ -214,6 +257,17 @@ export function VaultShell({
         onClose={() => setUpgradeOpen(false)}
         whatsappNumber={whatsappNumber}
         reason={upgradeReason}
+      />
+
+      {/* Size warning before folder download */}
+      <SizeWarning
+        isOpen={sizeWarningOpen}
+        onClose={() => { setSizeWarningOpen(false); setSizeWarningData(null); }}
+        onConfirm={handleConfirmFolderDownload}
+        folderName={sizeWarningData?.name ?? ""}
+        totalSize={sizeWarningData?.totalSize ?? ""}
+        totalFiles={sizeWarningData?.totalFiles ?? 0}
+        totalSizeBytes={sizeWarningData?.totalSizeBytes ?? 0}
       />
     </div>
   );
