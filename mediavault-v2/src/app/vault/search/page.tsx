@@ -23,7 +23,7 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   if (!query) redirect("/vault");
 
-  const results = await searchCatalog(query, type, 100, 0);
+  const results = await searchCatalog(query, type, 200, 0);
 
   return (
     <div className="p-4 md:p-6 max-w-7xl">

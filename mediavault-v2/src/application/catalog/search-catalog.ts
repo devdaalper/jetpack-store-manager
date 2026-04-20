@@ -41,13 +41,13 @@ export interface SearchResponse {
  *
  * @param query - Search query (tokenized by spaces)
  * @param type - Filter by media type (audio, video, or undefined for all)
- * @param limit - Max results (default 50)
+ * @param limit - Max results (default 200)
  * @param offset - Pagination offset (default 0)
  */
 export async function searchCatalog(
   query: string,
   type?: "audio" | "video" | "other",
-  limit = 50,
+  limit = 200,
   offset = 0,
 ): Promise<SearchResponse> {
   const supabase = createServiceClient();
@@ -84,7 +84,7 @@ export async function searchCatalog(
     const name = folder.replace(/\/$/, "").split("/").pop() ?? folder;
     folderSet.set(folder, { name, path: folder, fullPath: folder });
   }
-  const folders = Array.from(folderSet.values()).slice(0, 20);
+  const folders = Array.from(folderSet.values()).slice(0, 50);
 
   // Build query — search across name_norm and folder_norm
   // Use ilike for each token (all must match)

@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { Sidebar } from "@/components/layout/sidebar";
 import { PlayerBar, type PlayerTrack } from "@/components/layout/player-bar";
 import { UpgradeSheet } from "@/components/access/upgrade-sheet";
+import { VaultActionsProvider } from "@/hooks/useVaultActions";
 import { Menu, X } from "lucide-react";
 import type { TierValue } from "@/domain/schemas";
 
@@ -163,10 +164,12 @@ export function VaultShell({
         onToggleCollapse={toggleSidebar}
       />
 
-      {/* Main content */}
-      <div className="flex-1 min-w-0 flex flex-col pb-16">
-        {children}
-      </div>
+      {/* Main content — wrapped with VaultActionsProvider so FileRow can access handlers */}
+      <VaultActionsProvider playFile={handlePlayFile} downloadFile={handleDownloadFile}>
+        <div className="flex-1 min-w-0 flex flex-col pb-16">
+          {children}
+        </div>
+      </VaultActionsProvider>
 
       {/* Player bar */}
       <PlayerBar

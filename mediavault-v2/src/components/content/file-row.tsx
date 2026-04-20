@@ -1,15 +1,16 @@
 "use client";
 
 import { Music2, Film, FileIcon, Play, Download, Lock } from "lucide-react";
+import { useVaultActions } from "@/hooks/useVaultActions";
 import type { BrowseFile } from "@/application/catalog/browse-folder";
 
 interface FileRowProps {
   file: BrowseFile;
-  onPlay?: ((file: BrowseFile) => void) | undefined;
-  onDownload?: ((file: BrowseFile) => void) | undefined;
 }
 
-export function FileRow({ file, onPlay, onDownload }: FileRowProps) {
+export function FileRow({ file }: FileRowProps) {
+  const { playFile, downloadFile } = useVaultActions();
+
   const Icon = file.mediaKind === "audio"
     ? Music2
     : file.mediaKind === "video"
@@ -39,7 +40,7 @@ export function FileRow({ file, onPlay, onDownload }: FileRowProps) {
       <div className="flex items-center gap-1.5 md:opacity-0 md:group-hover:opacity-100 transition flex-shrink-0">
         {isMedia && (
           <button
-            onClick={() => onPlay?.(file)}
+            onClick={() => playFile(file.path, file.name, file.mediaKind as "audio" | "video")}
             className="p-2.5 rounded-full bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 transition"
             title="Reproducir"
           >
@@ -47,7 +48,7 @@ export function FileRow({ file, onPlay, onDownload }: FileRowProps) {
           </button>
         )}
         <button
-          onClick={() => onDownload?.(file)}
+          onClick={() => downloadFile(file.path, file.name)}
           className={`p-2.5 rounded-full transition ${
             file.canDownload
               ? "text-neutral-600 hover:bg-neutral-200 active:bg-neutral-300"

@@ -10,8 +10,6 @@ interface ContentViewProps {
   files: BrowseFile[];
   view: "grid" | "list";
   filter: "all" | "audio" | "video";
-  onPlayFile?: (file: BrowseFile) => void;
-  onDownloadFile?: (file: BrowseFile) => void;
 }
 
 export function ContentView({
@@ -19,8 +17,6 @@ export function ContentView({
   files,
   view,
   filter,
-  onPlayFile,
-  onDownloadFile,
 }: ContentViewProps) {
   // Filter files by type
   const filteredFiles = filter === "all"
@@ -66,8 +62,6 @@ export function ContentView({
                 <FileRow
                   key={file.path}
                   file={file}
-                  onPlay={onPlayFile}
-                  onDownload={onDownloadFile}
                 />
               ))}
             </div>
@@ -77,8 +71,6 @@ export function ContentView({
                 <FileCardCompact
                   key={file.path}
                   file={file}
-                  onPlay={onPlayFile}
-                  onDownload={onDownloadFile}
                 />
               ))}
             </div>
@@ -91,16 +83,10 @@ export function ContentView({
 
 // Compact file card for grid view
 import { Music2, Film, FileIcon, Play } from "lucide-react";
+import { useVaultActions } from "@/hooks/useVaultActions";
 
-function FileCardCompact({
-  file,
-  onPlay,
-  onDownload,
-}: {
-  file: BrowseFile;
-  onPlay?: ((file: BrowseFile) => void) | undefined;
-  onDownload?: ((file: BrowseFile) => void) | undefined;
-}) {
+function FileCardCompact({ file }: { file: BrowseFile }) {
+  const { playFile } = useVaultActions();
   const isMedia = file.mediaKind === "audio" || file.mediaKind === "video";
   const Icon = file.mediaKind === "audio" ? Music2 : file.mediaKind === "video" ? Film : FileIcon;
 
@@ -117,7 +103,7 @@ function FileCardCompact({
         {/* Play overlay on hover */}
         {isMedia && (
           <button
-            onClick={(e) => { e.stopPropagation(); onPlay?.(file); }}
+            onClick={(e) => { e.stopPropagation(); playFile(file.path, file.name, file.mediaKind as "audio" | "video"); }}
             className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition"
           >
             <div className="w-12 h-12 rounded-full bg-orange-500 flex items-center justify-center">

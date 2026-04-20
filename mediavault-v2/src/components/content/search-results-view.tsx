@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Folder, Music2, Film, FileIcon, Play, Search } from "lucide-react";
+import { useVaultActions } from "@/hooks/useVaultActions";
 import type { SearchResult, SearchFolder } from "@/application/catalog/search-catalog";
 
 interface SearchResultsViewProps {
@@ -11,6 +12,7 @@ interface SearchResultsViewProps {
 }
 
 export function SearchResultsView({ folders, files, query }: SearchResultsViewProps) {
+  const { playFile } = useVaultActions();
   if (folders.length === 0 && files.length === 0) {
     return (
       <div className="text-center py-20">
@@ -99,7 +101,10 @@ export function SearchResultsView({ folders, files, query }: SearchResultsViewPr
                     </p>
                   </div>
                   {isMedia && (
-                    <button className="p-2 rounded-full bg-orange-500 text-white hover:bg-orange-600 transition opacity-0 group-hover:opacity-100">
+                    <button
+                      onClick={() => playFile(file.path, file.name, file.mediaKind as "audio" | "video")}
+                      className="p-2.5 rounded-full bg-orange-500 text-white hover:bg-orange-600 active:bg-orange-700 transition md:opacity-0 md:group-hover:opacity-100"
+                    >
                       <Play className="w-4 h-4" fill="currentColor" />
                     </button>
                   )}
