@@ -14,6 +14,7 @@ interface VaultContentProps {
   currentName: string;
   totalFiles: number;
   folderCount: number;
+  depth: number;
 }
 
 export function VaultContent({
@@ -24,6 +25,7 @@ export function VaultContent({
   currentName,
   totalFiles,
   folderCount,
+  depth,
 }: VaultContentProps) {
   const [view, setView] = useState<"grid" | "list">("grid");
   const [filter, setFilter] = useState<"all" | "audio" | "video">("all");
@@ -93,6 +95,7 @@ export function VaultContent({
           files={files}
           view={view}
           filter={filter}
+          depth={depth}
         />
       </div>
     </>

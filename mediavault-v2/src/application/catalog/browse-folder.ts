@@ -42,6 +42,8 @@ export interface BrowseResult {
   currentFolder: string;
   breadcrumbs: Array<{ name: string; path: string }>;
   totalFiles: number;
+  /** Depth relative to junction: 0=home, 1=categories, 2+=downloadable */
+  depth: number;
 }
 
 // ─── Cached config loader (deduplicates within same request) ────────
@@ -151,12 +153,21 @@ export async function browseFolder(
 
   const breadcrumbs = buildBreadcrumbs(normalizedPath);
 
+  // Calculate depth relative to junction
+  // Junction e.g. "Full Pack [JetPack Store]/" = depth 0
+  // "Full Pack [JetPack Store]/KARAOKE/" = depth 1
+  // "Full Pack [JetPack Store]/KARAOKE/sub/" = depth 2 (downloadable)
+  const junctionSegments = junction.split("/").filter(Boolean).length;
+  const currentSegments = normalizedPath.split("/").filter(Boolean).length;
+  const depth = Math.max(0, currentSegments - junctionSegments);
+
   return {
     folders,
     files,
     currentFolder: normalizedPath,
     breadcrumbs,
     totalFiles: count ?? files.length,
+    depth,
   };
 }
 

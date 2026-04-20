@@ -37,6 +37,7 @@ export default async function VaultPage({ searchParams }: VaultPageProps) {
         currentName={currentName}
         totalFiles={data.totalFiles}
         folderCount={data.folders.length}
+        depth={data.depth}
       />
     </div>
   );

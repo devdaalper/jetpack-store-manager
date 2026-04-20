@@ -5,6 +5,8 @@ import { Sidebar } from "@/components/layout/sidebar";
 import { PlayerBar, type PlayerTrack } from "@/components/layout/player-bar";
 import { UpgradeSheet } from "@/components/access/upgrade-sheet";
 import { VaultActionsProvider } from "@/hooks/useVaultActions";
+import { useDownloadManager } from "@/hooks/useDownloadManager";
+import { DownloadProgress } from "@/components/vault/download-progress";
 import { Menu, X } from "lucide-react";
 import type { TierValue } from "@/domain/schemas";
 
@@ -30,6 +32,9 @@ export function VaultShell({
   // Player state
   const [currentTrack, setCurrentTrack] = useState<PlayerTrack | null>(null);
   const [remainingPlays, setRemainingPlays] = useState(-1);
+
+  // Download manager
+  const { jobs, downloadFile: dmDownloadFile, downloadFolder: dmDownloadFolder, cancelJob, dismissJob } = useDownloadManager();
 
   // Upgrade sheet state
   const [upgradeOpen, setUpgradeOpen] = useState(false);
@@ -128,6 +133,23 @@ export function VaultShell({
     }
   }, [userTier]);
 
+  // Download folder handler
+  const handleDownloadFolder = useCallback(async (path: string, name: string) => {
+    if (userTier === 0) {
+      setUpgradeReason("download");
+      setUpgradeOpen(true);
+      return;
+    }
+
+    // Check browser support
+    if (!("showDirectoryPicker" in window)) {
+      alert("Tu navegador no soporta descarga de carpetas. Usa Chrome o Edge para esta función.");
+      return;
+    }
+
+    dmDownloadFolder(path, name);
+  }, [userTier, dmDownloadFolder]);
+
   return (
     <div className="flex min-h-screen bg-neutral-50">
       {/* Mobile hamburger */}
@@ -165,7 +187,7 @@ export function VaultShell({
       />
 
       {/* Main content — wrapped with VaultActionsProvider so FileRow can access handlers */}
-      <VaultActionsProvider playFile={handlePlayFile} downloadFile={handleDownloadFile}>
+      <VaultActionsProvider playFile={handlePlayFile} downloadFile={handleDownloadFile} downloadFolder={handleDownloadFolder}>
         <div className="flex-1 min-w-0 flex flex-col pb-16">
           {children}
         </div>
@@ -177,6 +199,13 @@ export function VaultShell({
         remainingPlays={remainingPlays}
         onClose={() => setCurrentTrack(null)}
         whatsappNumber={whatsappNumber}
+      />
+
+      {/* Download progress panel */}
+      <DownloadProgress
+        jobs={jobs}
+        onCancel={cancelJob}
+        onDismiss={dismissJob}
       />
 
       {/* Upgrade sheet */}

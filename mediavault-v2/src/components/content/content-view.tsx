@@ -10,6 +10,7 @@ interface ContentViewProps {
   files: BrowseFile[];
   view: "grid" | "list";
   filter: "all" | "audio" | "video";
+  depth?: number | undefined;
 }
 
 export function ContentView({
@@ -17,6 +18,7 @@ export function ContentView({
   files,
   view,
   filter,
+  depth = 0,
 }: ContentViewProps) {
   // Filter files by type
   const filteredFiles = filter === "all"
@@ -43,7 +45,7 @@ export function ContentView({
         <div className="mb-6">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {folders.map((folder) => (
-              <FolderCard key={folder.path} folder={folder} />
+              <FolderCard key={folder.path} folder={folder} showDownload={depth >= 2} />
             ))}
           </div>
         </div>
